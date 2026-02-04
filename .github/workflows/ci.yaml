@@ -1,0 +1,40 @@
+name: Continuous Integration
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+    - main
+  push:
+    branches:
+    - main
+
+env:
+  GREEN: '\033[0;32m'
+  NO_COLOR: '\033[0m'
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+    name: Lint testing
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Setup uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
+
+    - name: Install dependencies
+      run: uv sync --dev
+
+    - name: Run all pre-commit hooks
+      run: |
+        uv run pre-commit run --all-files --verbose
+        echo -e "${GREEN}Job completed successfully${NO_COLOR}"
