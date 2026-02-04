@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src=".assets/logo.png" width="100" alt="Plaque Predictors Logo">
+<img src=".assets/logo.png" width="150" alt="Plaque Predictors Logo">
 
-# 🫀 Plaque Predictors: Cardiac Risk Analysis
+# Plaque Predictors: Cardiac Risk Analysis
 
 [![Python 3.13](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/downloads/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6.svg)](https://www.typescriptlang.org/)
