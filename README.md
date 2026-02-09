@@ -36,8 +36,9 @@ plaque-predictors/
 │   ├── notebooks/                  # Jupyter notebooks (EDA, experiments)
 │   ├── scripts/                    # Training & preprocessing scripts
 │   ├── data/                       # Datasets
-│   │   ├── source.csv              # Processed English dataset (56 records)
-│   │   └── source_ru.csv           # Original Russian dataset
+│   │   ├── source.csv              # Full processed dataset
+│   │   ├── features.csv            # Modeling dataset (selected features + targets)
+│   │   └── features.md             # Notes on source vs features changes
 │   └── pyproject.toml              # Backend dependencies
 │
 ├── frontend/                       # ⚛️ Next.js Frontend
@@ -55,35 +56,39 @@ plaque-predictors/
 
 ## 📊 Dataset
 
-The `source.csv` dataset contains 56 clinical records with the following key features:
+- `backend/data/source.csv`: full processed dataset (`57` rows, `36` columns).
+- `backend/data/features.csv`: reduced modeling dataset (`57` rows, `18` columns).
 
-### Clinical Data
-| Feature | Description |
-|---------|-------------|
-| `gender` | Patient gender (male/female) |
-| `age` | Patient age |
-| `angina_functional_class` | Angina Functional Class (CCS) |
-| `post_infarction_cardiosclerosis` | History of post-myocardial infarction |
-| `multifocal_atherosclerosis` | Presence of multifocal atherosclerosis |
-| `diabetes_mellitus` | Diabetes Mellitus indicator |
-| `hypertension` | Hypertension (High Blood Pressure) indicator |
-| `cholesterol_level` | Total cholesterol levels |
+### Features Available in `features.csv`
+- `gender`
+- `age`
+- `angina_functional_class`
+- `post_infarction_cardiosclerosis`
+- `multifocal_atherosclerosis`
+- `diabetes_mellitus`
+- `copd_asthma`
+- `hypertension`
+- `cholesterol_level`
+- `bmi`
+- `lvef_percent`
+- `blood_flow_type`
+- `syntax_score`
+- `ffr`
+- `plaque_volume_percent`
+- `lumen_area`
 
-### Plaque Morphology
-| Feature | Description |
-|---------|-------------|
-| `unstable_plaque` | Plaque Stability (1 = Unstable, 0 = Stable) |
-| `plaque_volume_percent` | Plaque Volume percentage |
-| `lumen_area` | Vessel Lumen area in mm² |
-| `syntax_score` | Complexity score for coronary artery disease |
+### Task-Specific `X` and `y`
+Task 1: Clinical data -> plaque morphology
+- `X`: `gender`, `age`, `angina_functional_class`, `post_infarction_cardiosclerosis`, `multifocal_atherosclerosis`, `diabetes_mellitus`, `copd_asthma`, `hypertension`, `cholesterol_level`, `bmi`, `lvef_percent`
+- `y`:
+- `unstable_plaque` (classification)
+- `plaque_volume_percent` (regression)
+- `lumen_area` (regression)
 
-### Target Variables (Adverse Outcomes)
-| Feature | Description |
-|---------|-------------|
-| `hospital_death` | Death occurring during hospitalization |
-| `repeated_revascularization` | Repeat revascularization procedure |
-| `myocardial_infarction_followup` | Myocardial Infarction at follow-up |
-| `repeated_hospitalization` | Repeated hospitalization |
+Task 2: Adverse outcome prediction
+- `X`: Task 1 clinical features + `unstable_plaque`, `plaque_volume_percent`, `lumen_area`, `ffr`, `syntax_score`
+- `y`: `adverse_outcome` (classification, derived target in `features.csv`)
+- Definition: `1` if any of `hospital_death`, `stent_thrombosis`, `hospital_mi`, `stroke_tia`, `stroke`, `repeated_hospitalization`, `repeated_revascularization`, `myocardial_infarction_followup` equals `1`; else `0`.
 
 ## 🛠️ Tech Stack
 
