@@ -12,7 +12,7 @@ resolution-markers = [
 
 [manifest]
 members = [
-    "plaque-predictors",
+    "plaque-risk-explorer",
 ]
 
 [[package]]
@@ -402,7 +402,7 @@ wheels = [
 ]
 
 [[package]]
-name = "plaque-predictors"
+name = "plaque-risk-explorer"
 version = "0.1.0"
 source = { editable = "backend" }
 dependencies = [

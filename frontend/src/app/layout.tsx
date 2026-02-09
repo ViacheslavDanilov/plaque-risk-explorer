@@ -14,7 +14,7 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Plaque Predictors Demo",
+  title: "Plaque Risk Explorer Demo",
   description: "Interactive demo UI for mock cardiovascular risk prediction.",
 };
 

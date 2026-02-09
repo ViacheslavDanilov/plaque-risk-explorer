@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src=".assets/logo.png" width="150" alt="Plaque Predictors Logo">
+<img src=".assets/logo.png" width="150" alt="Plaque Risk Explorer Logo">
 
-# Plaque Predictors: Cardiac Risk Analysis
+# Plaque Risk Explorer
 
 [![Python 3.13](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/downloads/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6.svg)](https://www.typescriptlang.org/)
@@ -27,9 +27,9 @@ The goal is to provide a tool for cardiac risk stratification by analyzing:
 ## 📁 Project Structure
 
 ```
-plaque-predictors/
+plaque-risk-explorer/
 ├── backend/                        # 🐍 Python Backend (UV workspace member)
-│   ├── src/plaque_predictors/      # FastAPI application
+│   ├── src/plaque_risk_explorer/      # FastAPI application
 │   │   ├── __init__.py
 │   │   └── main.py                 # API endpoints
 │   ├── models/                     # Trained ML model artifacts
@@ -122,8 +122,8 @@ Task 2: Adverse outcome prediction
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/[your-username]/plaque-predictors.git
-    cd plaque-predictors
+    git clone https://github.com/ViacheslavDanilov/plaque-risk-explorer.git
+    cd plaque-risk-explorer
     ```
 
 2.  **Install Python dependencies:**
@@ -142,7 +142,7 @@ Task 2: Adverse outcome prediction
 
 **Backend (FastAPI):**
 ```bash
-uv run uvicorn plaque_predictors.main:app --reload
+uv run uvicorn plaque_risk_explorer.main:app --reload
 ```
 API will be available at: http://localhost:8000
 API docs at: http://localhost:8000/docs

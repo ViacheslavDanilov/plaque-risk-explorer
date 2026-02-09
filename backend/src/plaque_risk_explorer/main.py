@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 app = FastAPI(
-    title="Plaque Predictors",
+    title="Plaque Risk Explorer",
     description="Association of Clinical Factors and Plaque Morphology with Adverse Cardiovascular Outcomes",
     version="0.1.0",
 )
