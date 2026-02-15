@@ -12,7 +12,7 @@ def train_adverse_outcome_model(features_csv: Path, model_path: Path) -> None:
 
     model_path.parent.mkdir(parents=True, exist_ok=True)
     model_path.write_text(
-        f"placeholder_model\nrows={rows}\ncols={cols}\n", encoding="utf-8"
+        f"placeholder_model\nrows={rows}\ncols={cols}\n",
+        encoding="utf-8",
     )
     print(f"Saved placeholder model to {model_path}")
-

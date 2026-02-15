@@ -13,7 +13,8 @@ def predict_unstable_plaque_and_adverse_outcome(payload: dict) -> dict:
 
     unstable_probability = round(rng.uniform(0.05, 0.55), 3)
     adverse_probability = round(
-        min(max(0.2 * unstable_probability + rng.uniform(0.02, 0.75), 0.01), 0.99), 3
+        min(max(0.2 * unstable_probability + rng.uniform(0.02, 0.75), 0.01), 0.99),
+        3,
     )
 
     return {
@@ -23,4 +24,3 @@ def predict_unstable_plaque_and_adverse_outcome(payload: dict) -> dict:
         "adverse_outcome_prediction": int(adverse_probability >= 0.5),
         "model_version": "demo-random-v1",
     }
-

@@ -13,4 +13,3 @@ def build_features(input_csv: Path, output_csv: Path) -> None:
     output_csv.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(output_csv, index=False)
     print(f"Saved features to {output_csv}")
-

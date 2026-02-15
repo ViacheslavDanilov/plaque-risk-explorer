@@ -3,6 +3,7 @@ from typing import Literal
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+
 from ml.inference.mock_predictor import predict_unstable_plaque_and_adverse_outcome
 
 app = FastAPI(

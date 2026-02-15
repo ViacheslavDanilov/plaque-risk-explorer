@@ -14,4 +14,3 @@ def evaluate_adverse_outcome_model(features_csv: Path, model_path: Path) -> None
     print(f"- model_found: {model_exists}")
     print("- auc: 0.50 (placeholder)")
     print("- f1: 0.00 (placeholder)")
-
