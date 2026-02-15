@@ -3,6 +3,7 @@ from typing import Literal
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from ml.inference.mock_predictor import predict_unstable_plaque_and_adverse_outcome
 
 app = FastAPI(
     title="Plaque Risk Explorer",
@@ -40,6 +41,14 @@ class PredictionResponse(BaseModel):
     confidence: float
     mock_model_version: str
     recommendations: list[str]
+
+
+class DemoBinaryPredictionResponse(BaseModel):
+    unstable_plaque_probability: float
+    unstable_plaque_prediction: int
+    adverse_outcome_probability: float
+    adverse_outcome_prediction: int
+    model_version: str
 
 
 def _score_mock_risk(payload: PredictionRequest) -> PredictionResponse:
@@ -99,36 +108,13 @@ async def health_check():
     return {"status": "healthy"}
 
 
-@app.get("/api/v1/demo/cohort-summary")
-async def cohort_summary():
-    """Mock aggregate metrics for dashboard cards."""
-    return {
-        "patients_analyzed": 57,
-        "high_risk_share": 0.29,
-        "mean_syntax_score": 17.8,
-        "mean_ffr": 0.82,
-    }
-
-
-@app.get("/api/v1/demo/recent-cases")
-async def recent_cases():
-    """Mock recent predictions for table previews."""
-    return {
-        "items": [
-            {"case_id": "PP-1021", "age": 68, "risk_tier": "high", "probability": 0.79},
-            {
-                "case_id": "PP-1018",
-                "age": 59,
-                "risk_tier": "moderate",
-                "probability": 0.48,
-            },
-            {"case_id": "PP-1016", "age": 74, "risk_tier": "high", "probability": 0.84},
-            {"case_id": "PP-1014", "age": 52, "risk_tier": "low", "probability": 0.21},
-        ],
-    }
-
-
 @app.post("/api/v1/predict/adverse-outcome", response_model=PredictionResponse)
 async def predict_adverse_outcome(payload: PredictionRequest):
     """Mock endpoint used by frontend until trained models are available."""
     return _score_mock_risk(payload)
+
+
+@app.post("/api/v1/predict/demo-binary", response_model=DemoBinaryPredictionResponse)
+async def predict_demo_binary(payload: PredictionRequest):
+    """Simple demo endpoint that mimics calling two binary models."""
+    return predict_unstable_plaque_and_adverse_outcome(payload.model_dump())

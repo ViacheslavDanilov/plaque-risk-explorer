@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 
 type RiskTier = "low" | "moderate" | "high";
 
@@ -24,20 +24,6 @@ type PredictionResponse = {
   recommendations: string[];
 };
 
-type CohortSummary = {
-  patients_analyzed: number;
-  high_risk_share: number;
-  mean_syntax_score: number;
-  mean_ffr: number;
-};
-
-type RecentCase = {
-  case_id: string;
-  age: number;
-  risk_tier: RiskTier;
-  probability: number;
-};
-
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ??
   "http://localhost:8000";
@@ -56,40 +42,9 @@ const initialForm: PredictionRequest = {
 
 export default function Home() {
   const [form, setForm] = useState<PredictionRequest>(initialForm);
-  const [summary, setSummary] = useState<CohortSummary | null>(null);
-  const [recentCases, setRecentCases] = useState<RecentCase[]>([]);
   const [result, setResult] = useState<PredictionResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setError(null);
-        const [summaryResponse, casesResponse] = await Promise.all([
-          fetch(`${API_BASE}/api/v1/demo/cohort-summary`),
-          fetch(`${API_BASE}/api/v1/demo/recent-cases`),
-        ]);
-
-        if (!summaryResponse.ok || !casesResponse.ok) {
-          throw new Error("Failed to load demo data from backend.");
-        }
-
-        const summaryData = (await summaryResponse.json()) as CohortSummary;
-        const casesData = (await casesResponse.json()) as { items: RecentCase[] };
-
-        setSummary(summaryData);
-        setRecentCases(casesData.items);
-      } catch {
-        setError("Backend unavailable. Start FastAPI at http://localhost:8000.");
-      } finally {
-        setIsBootstrapping(false);
-      }
-    };
-
-    void loadData();
-  }, []);
 
   const updateField = <K extends keyof PredictionRequest>(
     key: K,
@@ -129,30 +84,8 @@ export default function Home() {
         <p className="eyebrow">Cardiology Demo</p>
         <h1>Plaque Risk Explorer</h1>
         <p className="hero-copy">
-          This interface is wired to mock FastAPI endpoints and can be directly
-          reused when trained models are available.
+          Simple demo UI for adverse outcome prediction.
         </p>
-      </section>
-
-      <section className="metrics-grid">
-        <article className="metric">
-          <span>Patients analyzed</span>
-          <strong>{summary?.patients_analyzed ?? "..."}</strong>
-        </article>
-        <article className="metric">
-          <span>High-risk share</span>
-          <strong>
-            {summary ? `${Math.round(summary.high_risk_share * 100)}%` : "..."}
-          </strong>
-        </article>
-        <article className="metric">
-          <span>Mean SYNTAX</span>
-          <strong>{summary?.mean_syntax_score ?? "..."}</strong>
-        </article>
-        <article className="metric">
-          <span>Mean FFR</span>
-          <strong>{summary?.mean_ffr ?? "..."}</strong>
-        </article>
       </section>
 
       <section className="content-grid">
@@ -306,34 +239,6 @@ export default function Home() {
             </p>
           )}
         </div>
-      </section>
-
-      <section className="panel table-panel">
-        <h2>Recent Mock Cases</h2>
-        {isBootstrapping ? (
-          <p className="placeholder">Loading demo data...</p>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Case ID</th>
-                <th>Age</th>
-                <th>Risk Tier</th>
-                <th>Probability</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentCases.map((item) => (
-                <tr key={item.case_id}>
-                  <td>{item.case_id}</td>
-                  <td>{item.age}</td>
-                  <td className={`tier-${item.risk_tier}`}>{item.risk_tier}</td>
-                  <td>{Math.round(item.probability * 100)}%</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
       </section>
 
       {error ? <p className="error">{error}</p> : null}

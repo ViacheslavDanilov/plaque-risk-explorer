@@ -66,32 +66,11 @@ h1 {
   color: var(--muted);
 }
 
-.metrics-grid {
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.metric,
 .panel {
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--paper);
   padding: 18px;
-}
-
-.metric span {
-  display: block;
-  color: var(--muted);
-  font-size: 0.85rem;
-}
-
-.metric strong {
-  display: block;
-  margin-top: 8px;
-  font-size: 1.6rem;
-  letter-spacing: -0.02em;
 }
 
 .content-grid {
@@ -219,43 +198,6 @@ select:focus {
   gap: 8px;
 }
 
-.table-panel {
-  margin-top: 14px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.92rem;
-}
-
-th,
-td {
-  text-align: left;
-  border-bottom: 1px solid var(--line);
-  padding: 10px 4px;
-}
-
-th {
-  color: var(--muted);
-  font-weight: 600;
-}
-
-.tier-low {
-  color: #0b6c52;
-  font-weight: 700;
-}
-
-.tier-moderate {
-  color: var(--warning);
-  font-weight: 700;
-}
-
-.tier-high {
-  color: var(--danger);
-  font-weight: 700;
-}
-
 .placeholder {
   color: var(--muted);
 }
@@ -278,7 +220,6 @@ th {
 }
 
 @media (max-width: 900px) {
-  .metrics-grid,
   .content-grid,
   .form-grid {
     grid-template-columns: 1fr;
