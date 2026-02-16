@@ -59,7 +59,7 @@ export default function Home() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE}/api/v1/predict/adverse-outcome`, {
+      const response = await fetch(`${API_BASE}/predict`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

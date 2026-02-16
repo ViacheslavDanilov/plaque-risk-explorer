@@ -4,8 +4,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from ml.inference.mock_predictor import predict_unstable_plaque_and_adverse_outcome
-
 app = FastAPI(
     title="Plaque Risk Explorer",
     description="Association of Clinical Factors and Plaque Morphology with Adverse Cardiovascular Outcomes",
@@ -42,14 +40,6 @@ class PredictionResponse(BaseModel):
     confidence: float
     mock_model_version: str
     recommendations: list[str]
-
-
-class DemoBinaryPredictionResponse(BaseModel):
-    unstable_plaque_probability: float
-    unstable_plaque_prediction: int
-    adverse_outcome_probability: float
-    adverse_outcome_prediction: int
-    model_version: str
 
 
 def _score_mock_risk(payload: PredictionRequest) -> PredictionResponse:
@@ -109,13 +99,7 @@ async def health_check():
     return {"status": "healthy"}
 
 
-@app.post("/api/v1/predict/adverse-outcome", response_model=PredictionResponse)
+@app.post("/predict", response_model=PredictionResponse)
 async def predict_adverse_outcome(payload: PredictionRequest):
     """Mock endpoint used by frontend until trained models are available."""
     return _score_mock_risk(payload)
-
-
-@app.post("/api/v1/predict/demo-binary", response_model=DemoBinaryPredictionResponse)
-async def predict_demo_binary(payload: PredictionRequest):
-    """Simple demo endpoint that mimics calling two binary models."""
-    return predict_unstable_plaque_and_adverse_outcome(payload.model_dump())
