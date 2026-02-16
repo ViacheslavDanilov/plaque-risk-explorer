@@ -1,5 +1,5 @@
 [project]
-name = "plaque-predictors"
+name = "plaque-risk-explorer"
 version = "0.1.0"
 description = "Association of Clinical Factors and Plaque Morphology with Adverse Cardiovascular Outcomes"
 authors = [
@@ -28,7 +28,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/plaque_predictors"]
+packages = ["src/ml", "src/scripts", "src/plaque_risk_explorer"]
 
 [tool.mypy]
 python_version = "3.13"
@@ -57,4 +57,4 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["plaque_predictors"]
+known-first-party = ["plaque_risk_explorer", "ml", "scripts"]

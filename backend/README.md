@@ -1,4 +1,4 @@
-# Plaque Predictors - Backend
+# Plaque Risk Explorer - Backend
 
 Association of Clinical Factors and Plaque Morphology with Adverse Cardiovascular Outcomes
 
@@ -12,7 +12,7 @@ uv sync --dev
 ## Run
 
 ```bash
-uv run uvicorn plaque_predictors.main:app --reload
+uv run uvicorn plaque_risk_explorer.main:app --reload
 ```
 
 ## Test

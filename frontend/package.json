@@ -1,12 +1,12 @@
 {
-  "name": "plaque-predictors-frontend",
+  "name": "plaque-risk-explorer-frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "check": "prettier --check .",
     "format": "prettier --write ."
   },
