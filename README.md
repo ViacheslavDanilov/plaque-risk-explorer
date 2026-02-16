@@ -144,8 +144,8 @@ Task 2: Adverse outcome prediction
 ```bash
 uv run uvicorn plaque_risk_explorer.main:app --reload
 ```
-API will be available at: http://localhost:8000
-API docs at: http://localhost:8000/docs
+- API: http://localhost:8000
+- API docs: http://localhost:8000/docs
 
 **Frontend (Next.js):**
 ```bash
