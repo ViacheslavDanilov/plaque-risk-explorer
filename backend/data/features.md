@@ -1,9 +1,9 @@
 # Changes: `features.csv` vs `source.csv`
 
 ## Summary
-- Source file: `backend/data/source.csv` (57 rows, 36 columns)
-- Features file: `backend/data/features.csv` (57 rows, 18 columns)
-- Rows were kept (no row filtering).
+- Source file: `backend/data/source.csv` (56 patient rows used, 36 columns)
+- Features file: `backend/data/features.csv` (56 rows, 16 columns)
+- Rows were kept for patient records.
 
 ## Added Column
 - `adverse_outcome`: derived binary target for Task 2.
@@ -22,6 +22,8 @@
 - `dfr_ifr`
 - `stent_diameter`
 - `stent_length`
+- `copd_asthma` (constant value in dataset)
+- `blood_flow_type` (near-constant value in dataset)
 - `hospital_death`
 - `stent_thrombosis`
 - `hospital_mi`
@@ -38,12 +40,10 @@
 - `post_infarction_cardiosclerosis`
 - `multifocal_atherosclerosis`
 - `diabetes_mellitus`
-- `copd_asthma`
 - `hypertension`
 - `cholesterol_level`
 - `bmi`
 - `lvef_percent`
-- `blood_flow_type`
 - `syntax_score`
 - `ffr`
 - `plaque_volume_percent`
