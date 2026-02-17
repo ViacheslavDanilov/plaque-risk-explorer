@@ -94,10 +94,10 @@ export default function Home() {
   return (
     <main className="page-shell">
       <section className="hero-card">
-        <p className="eyebrow">Cardiology Demo</p>
+        <p className="eyebrow">Cardiology</p>
         <h1>Plaque Risk Explorer</h1>
         <p className="hero-copy">
-          Clinical features -&gt; plaque morphology and adverse outcome prediction.
+          Enter clinical data to estimate plaque characteristics and adverse outcome risk.
         </p>
       </section>
 
@@ -261,7 +261,7 @@ export default function Home() {
           </div>
 
           <button type="submit" className="btn-primary" disabled={isLoading}>
-            {isLoading ? "Calculating..." : "Run Demo Prediction"}
+            {isLoading ? "Calculating..." : "Run Prediction"}
           </button>
         </form>
 
