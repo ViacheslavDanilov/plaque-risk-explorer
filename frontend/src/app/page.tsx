@@ -30,8 +30,6 @@ type PredictionResponse = {
   adverse_outcome: BinaryTargetPrediction;
   plaque_volume_percent: number;
   lumen_area: number;
-  confidence: number;
-  mock_model_version: string;
   recommendations: string[];
 };
 
@@ -276,10 +274,6 @@ export default function Home() {
               </p>
               <p className="probability">
                 {Math.round(result.adverse_outcome.probability * 100)}%
-              </p>
-              <p className="meta">
-                Confidence: {Math.round(result.confidence * 100)}% | Model:{" "}
-                {result.mock_model_version}
               </p>
               <div className="metrics-grid">
                 <p>

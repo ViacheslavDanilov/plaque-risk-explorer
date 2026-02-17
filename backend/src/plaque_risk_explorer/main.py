@@ -48,8 +48,6 @@ class PredictionResponse(BaseModel):
     adverse_outcome: BinaryTargetPrediction
     plaque_volume_percent: float
     lumen_area: float
-    confidence: float
-    mock_model_version: str
     recommendations: list[str]
 
 
@@ -91,8 +89,6 @@ def _score_mock_risk(payload: PredictionRequest) -> PredictionResponse:
         adverse += 0.02
 
     adverse_probability = round(min(max(adverse, 0.01), 0.95), 3)
-    confidence = round(0.66 + 0.22 * abs(adverse_probability - 0.5), 3)
-
     if adverse_probability >= 0.65:
         risk_tier: Literal["low", "moderate", "high"] = "high"
         recommendations = [
@@ -147,8 +143,6 @@ def _score_mock_risk(payload: PredictionRequest) -> PredictionResponse:
         ),
         plaque_volume_percent=plaque_volume,
         lumen_area=lumen_area,
-        confidence=confidence,
-        mock_model_version="mock-v0.1",
         recommendations=recommendations,
     )
 
