@@ -156,6 +156,7 @@ select:focus {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+  align-items: stretch;
 }
 
 .secondary-targets-grid {
@@ -163,6 +164,7 @@ select:focus {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+  align-items: stretch;
 }
 
 .target-card {
@@ -170,6 +172,12 @@ select:focus {
   border-radius: 12px;
   background: #fcfffe;
   padding: 12px;
+  min-height: 116px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
 }
 
 .target-card-secondary {
@@ -178,12 +186,17 @@ select:focus {
 
 .risk-badge {
   margin: 0;
-  display: inline-block;
+  display: inline-flex;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 0.74rem;
-  letter-spacing: 0.08em;
-  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  width: auto;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .risk-low {
@@ -209,17 +222,12 @@ select:focus {
 }
 
 .target-percent {
-  margin: 8px 0 0;
-  font-size: clamp(1.9rem, 5vw, 2.8rem);
-  letter-spacing: -0.03em;
+  margin: 10px 0 0;
+  font-size: clamp(1.95rem, 4.0vw, 2.45rem);
+  letter-spacing: -0.025em;
   line-height: 1;
-}
-
-.target-value {
-  margin: 8px 0 0;
-  font-size: 1.4rem;
-  line-height: 1;
-  font-weight: 700;
+  font-weight: 500;
+  color: color-mix(in oklab, var(--foreground) 90%, #ffffff);
 }
 
 .recommendations li {

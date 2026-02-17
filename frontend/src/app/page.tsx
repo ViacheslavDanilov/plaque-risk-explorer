@@ -272,7 +272,7 @@ export default function Home() {
               <div className="target-cards-grid">
                 <article className="target-card">
                   <p className={`risk-badge risk-${result.unstable_plaque.risk_tier}`}>
-                    UNSTABLE PLAQUE: {result.unstable_plaque.risk_tier.toUpperCase()} RISK
+                    UNSTABLE PLAQUE: {result.unstable_plaque.risk_tier.toUpperCase()}
                   </p>
                   <p className="target-percent">
                     {Math.round(result.unstable_plaque.probability * 100)}%
@@ -280,7 +280,7 @@ export default function Home() {
                 </article>
                 <article className="target-card">
                   <p className={`risk-badge risk-${result.adverse_outcome.risk_tier}`}>
-                    ADVERSE OUTCOME: {result.adverse_outcome.risk_tier.toUpperCase()} RISK
+                    ADVERSE OUTCOME: {result.adverse_outcome.risk_tier.toUpperCase()}
                   </p>
                   <p className="target-percent">
                     {Math.round(result.adverse_outcome.probability * 100)}%
@@ -290,12 +290,16 @@ export default function Home() {
 
               <div className="secondary-targets-grid">
                 <article className="target-card target-card-secondary">
-                  <p className="risk-badge risk-low">PLAQUE VOLUME: CONTINUOUS TARGET</p>
-                  <p className="target-value">{result.plaque_volume_percent}%</p>
+                  <p className="risk-badge risk-low">PLAQUE VOLUME</p>
+                  <p className="target-percent">
+                    {Math.round(result.plaque_volume_percent)}%
+                  </p>
                 </article>
                 <article className="target-card target-card-secondary">
-                  <p className="risk-badge risk-low">LUMEN AREA: CONTINUOUS TARGET</p>
-                  <p className="target-value">{result.lumen_area}</p>
+                  <p className="risk-badge risk-low">LUMEN AREA</p>
+                  <p className="target-percent">
+                    {Number(result.lumen_area.toPrecision(2))}
+                  </p>
                 </article>
               </div>
 
