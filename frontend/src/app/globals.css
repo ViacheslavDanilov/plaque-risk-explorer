@@ -191,6 +191,17 @@ select:focus {
   font-size: 0.82rem;
 }
 
+.metrics-grid {
+  margin-top: 14px;
+  display: grid;
+  gap: 8px;
+  font-size: 0.92rem;
+}
+
+.metrics-grid p {
+  margin: 0;
+}
+
 .recommendations {
   margin: 16px 0 0;
   padding-left: 18px;
