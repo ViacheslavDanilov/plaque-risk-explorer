@@ -12,6 +12,8 @@
 
 **Association of clinical factors and plaque morphology with adverse cardiovascular outcomes.**
 
+🔗 **Live Demo**: https://plaque-risk-explorer.vercel.app/
+
 </div>
 
 ## 📋 Overview
