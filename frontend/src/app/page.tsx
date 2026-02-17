@@ -6,21 +6,30 @@ type RiskTier = "low" | "moderate" | "high";
 
 type PredictionRequest = {
   age: number;
-  sex: "female" | "male";
+  gender: "female" | "male";
+  angina_functional_class: 0 | 1 | 2 | 3;
+  post_infarction_cardiosclerosis: boolean;
+  multifocal_atherosclerosis: boolean;
   diabetes_mellitus: boolean;
   hypertension: boolean;
-  angina_class: "I" | "II" | "III" | "IV";
+  bmi: number;
   lvef_percent: number;
-  cholesterol_mmol_l: number;
-  ffr: number;
+  cholesterol_level: number;
+  ffr: number | null;
   syntax_score: number;
 };
 
-type PredictionResponse = {
+type BinaryTargetPrediction = {
   probability: number;
+  prediction: number;
   risk_tier: RiskTier;
-  confidence: number;
-  mock_model_version: string;
+};
+
+type PredictionResponse = {
+  unstable_plaque: BinaryTargetPrediction;
+  adverse_outcome: BinaryTargetPrediction;
+  plaque_volume_percent: number;
+  lumen_area: number;
   recommendations: string[];
 };
 
@@ -30,18 +39,22 @@ const API_BASE =
 
 const initialForm: PredictionRequest = {
   age: 62,
-  sex: "male",
+  gender: "male",
+  angina_functional_class: 2,
+  post_infarction_cardiosclerosis: false,
+  multifocal_atherosclerosis: false,
   diabetes_mellitus: false,
   hypertension: true,
-  angina_class: "II",
+  bmi: 28,
   lvef_percent: 51,
-  cholesterol_mmol_l: 5.2,
+  cholesterol_level: 5.2,
   ffr: 0.83,
   syntax_score: 18,
 };
 
 export default function Home() {
   const [form, setForm] = useState<PredictionRequest>(initialForm);
+  const [ffrInput, setFfrInput] = useState<string>("0.83");
   const [result, setResult] = useState<PredictionResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,10 +94,10 @@ export default function Home() {
   return (
     <main className="page-shell">
       <section className="hero-card">
-        <p className="eyebrow">Cardiology Demo</p>
+        <p className="eyebrow">Cardiology</p>
         <h1>Plaque Risk Explorer</h1>
         <p className="hero-copy">
-          Simple demo UI for adverse outcome prediction.
+          Enter clinical data to estimate plaque characteristics and adverse outcome risk.
         </p>
       </section>
 
@@ -106,11 +119,11 @@ export default function Home() {
             </label>
 
             <label>
-              Sex
+              Gender
               <select
-                value={form.sex}
+                value={form.gender}
                 onChange={(event) =>
-                  updateField("sex", event.currentTarget.value as "female" | "male")
+                  updateField("gender", event.currentTarget.value as "female" | "male")
                 }
               >
                 <option value="female">Female</option>
@@ -119,21 +132,33 @@ export default function Home() {
             </label>
 
             <label>
-              Angina Class
+              Angina Functional Class
               <select
-                value={form.angina_class}
+                value={form.angina_functional_class}
                 onChange={(event) =>
                   updateField(
-                    "angina_class",
-                    event.currentTarget.value as "I" | "II" | "III" | "IV",
+                    "angina_functional_class",
+                    Number(event.currentTarget.value) as 0 | 1 | 2 | 3,
                   )
                 }
               >
-                <option value="I">I</option>
-                <option value="II">II</option>
-                <option value="III">III</option>
-                <option value="IV">IV</option>
+                <option value={0}>0</option>
+                <option value={1}>1</option>
+                <option value={2}>2</option>
+                <option value={3}>3</option>
               </select>
+            </label>
+
+            <label>
+              BMI
+              <input
+                type="number"
+                step="0.1"
+                value={form.bmi}
+                onChange={(event) =>
+                  updateField("bmi", Number(event.currentTarget.value))
+                }
+              />
             </label>
 
             <label>
@@ -152,25 +177,27 @@ export default function Home() {
               Cholesterol (mmol/L)
               <input
                 type="number"
-                step="0.1"
-                value={form.cholesterol_mmol_l}
+                step="0.01"
+                value={form.cholesterol_level}
                 onChange={(event) =>
-                  updateField("cholesterol_mmol_l", Number(event.currentTarget.value))
+                  updateField("cholesterol_level", Number(event.currentTarget.value))
                 }
               />
             </label>
 
             <label>
-              FFR
+              FFR (leave blank if unavailable)
               <input
                 type="number"
                 step="0.01"
                 min={0.4}
                 max={1.0}
-                value={form.ffr}
-                onChange={(event) =>
-                  updateField("ffr", Number(event.currentTarget.value))
-                }
+                value={ffrInput}
+                onChange={(event) => {
+                  const value = event.currentTarget.value;
+                  setFfrInput(value);
+                  updateField("ffr", value === "" ? null : Number(value));
+                }}
               />
             </label>
 
@@ -184,6 +211,29 @@ export default function Home() {
                   updateField("syntax_score", Number(event.currentTarget.value))
                 }
               />
+            </label>
+          </div>
+
+          <div className="switch-row">
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={form.post_infarction_cardiosclerosis}
+                onChange={(event) =>
+                  updateField("post_infarction_cardiosclerosis", event.currentTarget.checked)
+                }
+              />
+              Post-Infarction Cardiosclerosis
+            </label>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={form.multifocal_atherosclerosis}
+                onChange={(event) =>
+                  updateField("multifocal_atherosclerosis", event.currentTarget.checked)
+                }
+              />
+              Multifocal Atherosclerosis
             </label>
           </div>
 
@@ -211,22 +261,48 @@ export default function Home() {
           </div>
 
           <button type="submit" className="btn-primary" disabled={isLoading}>
-            {isLoading ? "Calculating..." : "Run Demo Prediction"}
+            {isLoading ? "Calculating..." : "Run Prediction"}
           </button>
         </form>
 
         <div className="panel result-panel">
-          <h2>Prediction Output</h2>
+          <h2>Target Predictions</h2>
           {result ? (
             <>
-              <p className={`risk-badge risk-${result.risk_tier}`}>
-                {result.risk_tier.toUpperCase()} RISK
-              </p>
-              <p className="probability">{Math.round(result.probability * 100)}%</p>
-              <p className="meta">
-                Confidence: {Math.round(result.confidence * 100)}% | Model:{" "}
-                {result.mock_model_version}
-              </p>
+              <div className="target-cards-grid">
+                <article className="target-card">
+                  <p className={`risk-badge risk-${result.unstable_plaque.risk_tier}`}>
+                    UNSTABLE PLAQUE: {result.unstable_plaque.risk_tier.toUpperCase()}
+                  </p>
+                  <p className="target-percent">
+                    {Math.round(result.unstable_plaque.probability * 100)}%
+                  </p>
+                </article>
+                <article className="target-card">
+                  <p className={`risk-badge risk-${result.adverse_outcome.risk_tier}`}>
+                    ADVERSE OUTCOME: {result.adverse_outcome.risk_tier.toUpperCase()}
+                  </p>
+                  <p className="target-percent">
+                    {Math.round(result.adverse_outcome.probability * 100)}%
+                  </p>
+                </article>
+              </div>
+
+              <div className="secondary-targets-grid">
+                <article className="target-card target-card-secondary">
+                  <p className="risk-badge risk-low">PLAQUE VOLUME</p>
+                  <p className="target-percent">
+                    {Math.round(result.plaque_volume_percent)}%
+                  </p>
+                </article>
+                <article className="target-card target-card-secondary">
+                  <p className="risk-badge risk-low">LUMEN AREA</p>
+                  <p className="target-percent">
+                    {Number(result.lumen_area.toPrecision(2))}
+                  </p>
+                </article>
+              </div>
+
               <ul className="recommendations">
                 {result.recommendations.map((item) => (
                   <li key={item}>{item}</li>
@@ -235,7 +311,7 @@ export default function Home() {
             </>
           ) : (
             <p className="placeholder">
-              Submit the form to preview a mock adverse outcome score.
+              Submit the form to preview predictions for all current targets.
             </p>
           )}
         </div>

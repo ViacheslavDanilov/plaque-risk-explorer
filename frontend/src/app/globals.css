@@ -55,7 +55,7 @@ body {
 
 h1 {
   margin: 0;
-  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-size: 2.5rem;
   line-height: 1.04;
   letter-spacing: -0.02em;
 }
@@ -77,7 +77,7 @@ h1 {
   margin-top: 14px;
   display: grid;
   gap: 14px;
-  grid-template-columns: 1.3fr 1fr;
+  grid-template-columns: 1fr 1fr;
 }
 
 h2 {
@@ -152,14 +152,51 @@ select:focus {
   background: linear-gradient(170deg, #ffffff 0%, #f5faf8 100%);
 }
 
+.target-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: stretch;
+}
+
+.secondary-targets-grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: stretch;
+}
+
+.target-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fcfffe;
+  padding: 12px;
+  min-height: 116px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+}
+
+.target-card-secondary {
+  background: linear-gradient(180deg, #fcfffe 0%, #f7fbf9 100%);
+}
+
 .risk-badge {
   margin: 0;
-  display: inline-block;
+  display: inline-flex;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 0.74rem;
-  letter-spacing: 0.08em;
-  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  width: auto;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .risk-low {
@@ -179,16 +216,27 @@ select:focus {
 
 .probability {
   margin: 10px 0 0;
-  font-size: clamp(2.4rem, 8vw, 4rem);
+  font-size: 3rem;
   letter-spacing: -0.03em;
   line-height: 1;
 }
 
-.meta {
-  margin-top: 8px;
-  font-family: var(--font-space-mono), monospace;
-  color: var(--muted);
-  font-size: 0.82rem;
+.target-percent {
+  margin: 10px 0 0;
+  font-size: 2.25rem;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  font-weight: 500;
+  color: color-mix(in oklab, var(--foreground) 90%, #ffffff);
+}
+
+.recommendations li {
+  color: var(--foreground);
+}
+
+.target-cards-grid p,
+.secondary-targets-grid p {
+  margin: 0;
 }
 
 .recommendations {
@@ -222,6 +270,11 @@ select:focus {
 @media (max-width: 900px) {
   .content-grid,
   .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .target-cards-grid,
+  .secondary-targets-grid {
     grid-template-columns: 1fr;
   }
 
