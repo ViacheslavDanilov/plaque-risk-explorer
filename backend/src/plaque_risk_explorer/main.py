@@ -1,3 +1,4 @@
+import os
 from typing import Literal
 
 from fastapi import FastAPI
@@ -10,12 +11,16 @@ app = FastAPI(
     version="0.1.0",
 )
 
+default_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+cors_origins_env = os.getenv("CORS_ORIGINS", "")
+env_origins = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=list(dict.fromkeys(default_origins + env_origins)),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
