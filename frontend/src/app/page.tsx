@@ -269,25 +269,36 @@ export default function Home() {
           <h2>Target Predictions</h2>
           {result ? (
             <>
-              <p className={`risk-badge risk-${result.adverse_outcome.risk_tier}`}>
-                ADVERSE OUTCOME: {result.adverse_outcome.risk_tier.toUpperCase()} RISK
-              </p>
-              <p className="probability">
-                {Math.round(result.adverse_outcome.probability * 100)}%
-              </p>
-              <div className="metrics-grid">
-                <p>
-                  <strong>Unstable Plaque</strong>:{" "}
-                  {Math.round(result.unstable_plaque.probability * 100)}% (
-                  {result.unstable_plaque.prediction ? "positive" : "negative"})
-                </p>
-                <p>
-                  <strong>Plaque Volume (%)</strong>: {result.plaque_volume_percent}
-                </p>
-                <p>
-                  <strong>Lumen Area</strong>: {result.lumen_area}
-                </p>
+              <div className="target-cards-grid">
+                <article className="target-card">
+                  <p className={`risk-badge risk-${result.unstable_plaque.risk_tier}`}>
+                    UNSTABLE PLAQUE: {result.unstable_plaque.risk_tier.toUpperCase()} RISK
+                  </p>
+                  <p className="target-percent">
+                    {Math.round(result.unstable_plaque.probability * 100)}%
+                  </p>
+                </article>
+                <article className="target-card">
+                  <p className={`risk-badge risk-${result.adverse_outcome.risk_tier}`}>
+                    ADVERSE OUTCOME: {result.adverse_outcome.risk_tier.toUpperCase()} RISK
+                  </p>
+                  <p className="target-percent">
+                    {Math.round(result.adverse_outcome.probability * 100)}%
+                  </p>
+                </article>
               </div>
+
+              <div className="secondary-targets-grid">
+                <article className="target-card target-card-secondary">
+                  <p className="risk-badge risk-low">PLAQUE VOLUME: CONTINUOUS TARGET</p>
+                  <p className="target-value">{result.plaque_volume_percent}%</p>
+                </article>
+                <article className="target-card target-card-secondary">
+                  <p className="risk-badge risk-low">LUMEN AREA: CONTINUOUS TARGET</p>
+                  <p className="target-value">{result.lumen_area}</p>
+                </article>
+              </div>
+
               <ul className="recommendations">
                 {result.recommendations.map((item) => (
                   <li key={item}>{item}</li>
