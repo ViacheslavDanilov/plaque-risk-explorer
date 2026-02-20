@@ -1,6 +1,8 @@
 import logging
 import pandas as pd
 
+from sklearn.impute import KNNImputer, SimpleImputer
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -17,8 +19,30 @@ class MyDataLoader:
         # Implement your data loading logic here
         self.data = pd.read_csv(self.data_path)
         logger.info(f"Data loaded from path: {self.data_path}")
-        return self.data
     
+    def impute_missing_values(self, n_neighbors: int = 3, target_column: str = "adverse_outcome"):
+        # imputer = KNNImputer(n_neighbors=n_neighbors)
+        # data_filled = pd.DataFrame(imputer.fit_transform(self.data.drop(columns=["adverse_outcome"])),
+        #                         columns=self.data.drop(columns=["adverse_outcome"]).columns)
+        # data_filled["adverse_outcome"] = self.data["adverse_outcome"].values
+        # self.data = data_filled
+        data_filled = self.data.copy()
+
+        num_cols = data_filled.select_dtypes(include="number").columns.tolist()
+        cat_cols = data_filled.select_dtypes(exclude="number").columns.tolist()
+        if target_column in cat_cols:
+            cat_cols.remove(target_column)
+        
+        if num_cols:
+            imputer_num = KNNImputer(n_neighbors=n_neighbors)
+            data_filled[num_cols] = imputer_num.fit_transform(data_filled[num_cols])
+
+        if cat_cols:
+            imputer_cat = SimpleImputer(strategy="most_frequent")
+            data_filled[cat_cols] = imputer_cat.fit_transform(data_filled[cat_cols])
+
+        self.data = data_filled
+
     def get_data_features_and_target(self, target_column: str):
         if self.data is None:
             raise ValueError("Data not loaded. Please call load_data() before getting features and target.")
