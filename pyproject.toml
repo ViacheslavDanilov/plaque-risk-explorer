@@ -3,6 +3,8 @@ members = ["backend"]
 
 [dependency-groups]
 dev = [
+    "autogluon>=1.5.0",
+    "autogluon-tabular[tabarena,tabpfn]>=1.5.0",
     "imbalanced-learn>=0.14.1",
     "matplotlib>=3.10.8",
 ]
