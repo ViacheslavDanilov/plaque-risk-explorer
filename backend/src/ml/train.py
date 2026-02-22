@@ -18,17 +18,6 @@ CLINICAL_FEATURES = [
     "ffr",
 ]
 
-_SMALL_DATASET_HYPERPARAMETERS = {
-    "GBM": [
-        {
-            "num_leaves": 8,
-            "min_child_samples": 3,
-            "ag_args": {"name_suffix": "Shallow"},
-        },
-    ],
-    "LR": {},
-}
-
 
 def _fit_predictor(
     df: pd.DataFrame,
@@ -53,7 +42,6 @@ def _fit_predictor(
         # small datasets, so disable both.
         dynamic_stacking=False,
         num_stack_levels=0,
-        hyperparameters=_SMALL_DATASET_HYPERPARAMETERS,
         verbosity=2,
     )
     return predictor
