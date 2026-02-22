@@ -10,7 +10,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
 [![pandas](https://img.shields.io/badge/pandas-3.0-150458.svg?logo=pandas&logoColor=white)](https://pandas.pydata.org/)
 
-**Association of clinical factors and plaque morphology with adverse cardiovascular outcomes.**
+**Identifying predictors of adverse cardiovascular outcomes using AutoGluon, SHAP explainability, and LLM-powered clinical summaries.**
 
 🔗 **Live Demo**: https://plaque-risk-explorer.vercel.app/
 
@@ -18,13 +18,15 @@
 
 ## 📋 Overview
 
-This project is a research-focused prototype designed to analyze the relationship between clinical patient profiles and coronary plaque characteristics. By identifying key morphological markers (such as plaque volume and stability) alongside clinical history, the system aims to highlight potential predictors of adverse cardiovascular events.
+This project is a research-focused prototype designed to identify predictors of adverse cardiovascular outcomes using clinical, morphological, and procedural patient data. The system uses AutoGluon for automated model selection with SHAP-based explainability, providing both accurate predictions and interpretable insights. An LLM-powered module generates concise executive summaries for individual patient risk assessments.
 
 ## 🎯 Problem Statement
 
-The goal is to provide a tool for cardiac risk stratification by analyzing:
-1.  **Clinical-Morphological Correlation**: How clinical data (Diabetes, Hypertension, etc.) relates to the physical state of coronary plaques.
-2.  **Adverse Outcome Prediction**: Identifying which combinations of clinical and morphological features lead to a higher probability of events like myocardial infarction, repeat revascularization, or hospital death.
+Cardiac patients undergoing coronary interventions face risks of adverse outcomes including death, myocardial infarction, stroke, and need for repeat procedures. The goal is to:
+
+1. **Identify Key Predictors**: Determine which clinical and morphological factors are most predictive of adverse outcomes using SHAP-based feature importance
+2. **Risk Stratification**: Provide individual patient risk probability with interpretable factor contributions
+3. **Clinical Decision Support**: Generate LLM-powered executive summaries with risk interpretation and actionable recommendations
 
 ## 📁 Project Structure
 
@@ -58,39 +60,25 @@ plaque-risk-explorer/
 
 ## 📊 Dataset
 
-- `backend/data/source.csv`: full processed dataset (`57` rows, `36` columns).
-- `backend/data/features.csv`: reduced modeling dataset (`57` rows, `18` columns).
+- `backend/data/source.csv`: full processed dataset (`56` rows, `36` columns).
+- `backend/data/features.csv`: modeling dataset (`56` rows, `16` columns).
 
-### Features Available in `features.csv`
-- `gender`
-- `age`
-- `angina_functional_class`
-- `post_infarction_cardiosclerosis`
-- `multifocal_atherosclerosis`
-- `diabetes_mellitus`
-- `copd_asthma`
-- `hypertension`
-- `cholesterol_level`
-- `bmi`
-- `lvef_percent`
-- `blood_flow_type`
-- `syntax_score`
-- `ffr`
-- `plaque_volume_percent`
-- `lumen_area`
+### Predictors (`X`) — 15 features
 
-### Task-Specific `X` and `y`
-Task 1: Clinical data -> plaque morphology
-- `X`: `gender`, `age`, `angina_functional_class`, `post_infarction_cardiosclerosis`, `multifocal_atherosclerosis`, `diabetes_mellitus`, `copd_asthma`, `hypertension`, `cholesterol_level`, `bmi`, `lvef_percent`
-- `y`:
-  - `unstable_plaque` (classification)
-  - `plaque_volume_percent` (regression)
-  - `lumen_area` (regression)
+**Clinical (10)**
+- `gender`, `age`, `angina_functional_class`
+- `post_infarction_cardiosclerosis`, `multifocal_atherosclerosis`
+- `diabetes_mellitus`, `hypertension`
+- `cholesterol_level`, `bmi`, `lvef_percent`
 
-Task 2: Adverse outcome prediction
-- `X`: Task 1 clinical features + `unstable_plaque`, `plaque_volume_percent`, `lumen_area`, `ffr`, `syntax_score`
-- `y`:
-  - `adverse_outcome` (classification, derived target in `features.csv`)
+**Morphological (3)**
+- `plaque_volume_percent`, `lumen_area`, `unstable_plaque`
+
+**Procedural (2)**
+- `syntax_score`, `ffr`
+
+### Target (`y`)
+- `adverse_outcome` — binary composite endpoint (`1` if any of: hospital death, stent thrombosis, MI, stroke/TIA, repeated hospitalization/revascularization, or MI at follow-up). Positive cases: `5` of `56` (8.9%).
 
 ## 🛠️ Tech Stack
 
@@ -99,6 +87,9 @@ Task 2: Adverse outcome prediction
 - **FastAPI** - High-performance web framework
 - **Pydantic** - Data validation
 - **pandas** - Data manipulation and analysis
+- **AutoGluon** - Automated ML with model selection and ensembling
+- **SHAP** - Model explainability and feature importance
+- **LLM API** - Configurable provider (OpenAI, Anthropic, etc.) for executive summaries
 
 ### Frontend
 - **Next.js 16** - React framework with App Router
