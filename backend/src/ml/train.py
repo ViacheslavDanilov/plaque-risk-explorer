@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 from autogluon.tabular import TabularPredictor
 
-CLINICAL_FEATURES = [
+FEATURES = [
     "gender",
     "age",
     "angina_functional_class",
@@ -16,16 +16,19 @@ CLINICAL_FEATURES = [
     "lvef_percent",
     "syntax_score",
     "ffr",
+    "plaque_volume_percent",
+    "lumen_area",
+    "unstable_plaque",
 ]
 
 
 def _fit_predictor(
     df: pd.DataFrame,
-    label: str,
     model_dir: Path,
     time_limit: int = 120,
 ) -> TabularPredictor:
-    """Fit a binary TabularPredictor for the given label and save it under model_dir/label."""
+    """Fit a binary TabularPredictor for adverse_outcome and save it under model_dir."""
+    label = "adverse_outcome"
     target_dir = model_dir / label
     predictor = TabularPredictor(
         label=label,
@@ -33,7 +36,7 @@ def _fit_predictor(
         eval_metric="roc_auc",
         problem_type="binary",
     ).fit(
-        train_data=df[CLINICAL_FEATURES + [label]],
+        train_data=df[FEATURES + [label]],
         presets="best_quality",
         time_limit=time_limit,
         num_bag_folds=5,
@@ -47,37 +50,14 @@ def _fit_predictor(
     return predictor
 
 
-def train_adverse_outcome_model(
+def train_model(
     features_csv: Path,
     model_dir: Path,
-    time_limit: int = 120,
+    time_limit: int = 3600,
 ) -> TabularPredictor:
     """Train and persist the adverse_outcome binary classifier."""
     df = pd.read_csv(features_csv)
-    predictor = _fit_predictor(
-        df,
-        label="adverse_outcome",
-        model_dir=model_dir,
-        time_limit=time_limit,
-    )
+    predictor = _fit_predictor(df, model_dir=model_dir, time_limit=time_limit)
     print("\n--- adverse_outcome leaderboard ---")
-    print(predictor.leaderboard(silent=True).to_string())
-    return predictor
-
-
-def train_unstable_plaque_model(
-    features_csv: Path,
-    model_dir: Path,
-    time_limit: int = 120,
-) -> TabularPredictor:
-    """Train and persist the unstable_plaque binary classifier."""
-    df = pd.read_csv(features_csv)
-    predictor = _fit_predictor(
-        df,
-        label="unstable_plaque",
-        model_dir=model_dir,
-        time_limit=time_limit,
-    )
-    print("\n--- unstable_plaque leaderboard ---")
     print(predictor.leaderboard(silent=True).to_string())
     return predictor

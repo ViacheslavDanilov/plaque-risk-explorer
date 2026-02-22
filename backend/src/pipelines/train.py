@@ -2,14 +2,14 @@ import argparse
 import warnings
 from pathlib import Path
 
-from ml.train import train_adverse_outcome_model, train_unstable_plaque_model
+from ml.train import train_model
 
 # Resolve paths relative to the backend package root, regardless of cwd.
 _BACKEND_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Train plaque risk models.")
+    parser = argparse.ArgumentParser(description="Train the adverse outcome model.")
     parser.add_argument(
         "--features-csv",
         type=Path,
@@ -22,14 +22,14 @@ def _parse_args() -> argparse.Namespace:
         type=Path,
         default=_BACKEND_ROOT / "models",
         metavar="PATH",
-        help="Directory where trained models will be saved.",
+        help="Directory where the trained model will be saved.",
     )
     parser.add_argument(
         "--time-limit",
         type=int,
         default=120,
         metavar="SECONDS",
-        help="AutoGluon time budget per model in seconds (default: 120). "
+        help="AutoGluon time budget in seconds (default: 120). "
         "Use 3600+ for highest accuracy on a server.",
     )
     return parser.parse_args()
@@ -45,12 +45,7 @@ def main() -> None:
         stacklevel=2,
     )
     args.model_dir.mkdir(parents=True, exist_ok=True)
-    train_adverse_outcome_model(
-        features_csv=args.features_csv,
-        model_dir=args.model_dir,
-        time_limit=args.time_limit,
-    )
-    train_unstable_plaque_model(
+    train_model(
         features_csv=args.features_csv,
         model_dir=args.model_dir,
         time_limit=args.time_limit,
