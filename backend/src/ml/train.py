@@ -1,3 +1,5 @@
+import json
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -58,6 +60,23 @@ def train_model(
     """Train and persist the adverse_outcome binary classifier."""
     df = pd.read_csv(features_csv)
     predictor = _fit_predictor(df, model_dir=model_dir, time_limit=time_limit)
+
+    leaderboard = predictor.leaderboard(silent=True)
+    target_dir = model_dir / "adverse_outcome"
+
+    leaderboard.to_csv(target_dir / "leaderboard.csv", index=False)
+
+    training_info = {
+        "trained_at": datetime.now(UTC).isoformat(),
+        "time_limit_seconds": time_limit,
+        "features": FEATURES,
+        "n_samples": len(df),
+        "n_positive": int(df["adverse_outcome"].sum()),
+        "best_model": leaderboard.iloc[0]["model"],
+        "best_roc_auc": round(float(leaderboard.iloc[0]["score_val"]), 4),
+    }
+    (target_dir / "training_info.json").write_text(json.dumps(training_info, indent=2))
+
     print("\n--- adverse_outcome leaderboard ---")
-    print(predictor.leaderboard(silent=True).to_string())
+    print(leaderboard.to_string())
     return predictor
