@@ -1,12 +1,15 @@
 from pathlib import Path
 
-from ml.training.train import train_adverse_outcome_model
+from ml.train import train_all_models
+
+# Resolve paths relative to the backend package root, regardless of cwd.
+_BACKEND_ROOT = Path(__file__).resolve().parents[2]
 
 
 def main() -> None:
-    train_adverse_outcome_model(
-        features_csv=Path("backend/data/features.csv"),
-        model_path=Path("backend/models/adverse_outcome.placeholder.txt"),
+    train_all_models(
+        features_csv=_BACKEND_ROOT / "data" / "features.csv",
+        model_dir=_BACKEND_ROOT / "models",
     )
 
 

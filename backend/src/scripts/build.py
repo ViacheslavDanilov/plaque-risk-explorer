@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ml.preprocessing.build_features import build_features
+from ml.preprocess import build_features
 
 
 def main() -> None:
