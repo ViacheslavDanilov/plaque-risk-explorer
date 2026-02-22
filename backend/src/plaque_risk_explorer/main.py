@@ -1,14 +1,35 @@
 import os
+from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+
+from ml.inference import load_predictor, predict
+
+_BACKEND_ROOT = Path(__file__).resolve().parents[2]
+_MODEL_DIR = Path(os.getenv("MODEL_DIR", str(_BACKEND_ROOT / "models")))
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        app.state.predictor = load_predictor(_MODEL_DIR)
+    except Exception as exc:
+        raise RuntimeError(
+            f"Failed to load model from {_MODEL_DIR}. "
+            "Run `python -m pipelines.train` first.",
+        ) from exc
+    yield
+
 
 app = FastAPI(
     title="Plaque Risk Explorer",
     description="Association of Clinical Factors and Plaque Morphology with Adverse Cardiovascular Outcomes",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 default_origins = [
@@ -30,8 +51,9 @@ app.add_middleware(
 
 
 class PredictionRequest(BaseModel):
-    age: int = Field(62, ge=30, le=95)
+    # Clinical features
     gender: Literal["female", "male"] = "male"
+    age: int = Field(62, ge=30, le=95)
     angina_functional_class: Literal[0, 1, 2, 3] = 2
     post_infarction_cardiosclerosis: bool = False
     multifocal_atherosclerosis: bool = False
@@ -40,8 +62,12 @@ class PredictionRequest(BaseModel):
     cholesterol_level: float = Field(5.2, ge=2.0, le=12.0)
     bmi: float = Field(28.0, ge=15.0, le=60.0)
     lvef_percent: float = Field(51.0, ge=20.0, le=80.0)
-    ffr: float | None = Field(default=0.83, ge=0.4, le=1.0)
     syntax_score: float = Field(18.0, ge=0.0, le=60.0)
+    ffr: float | None = Field(default=0.83, ge=0.4, le=1.0)
+    # Imaging features
+    plaque_volume_percent: float = Field(60.0, ge=0.0, le=100.0)
+    lumen_area: float = Field(5.0, ge=0.5, le=15.0)
+    unstable_plaque: bool = False
 
 
 class BinaryTargetPrediction(BaseModel):
@@ -51,107 +77,36 @@ class BinaryTargetPrediction(BaseModel):
 
 
 class PredictionResponse(BaseModel):
-    unstable_plaque: BinaryTargetPrediction
     adverse_outcome: BinaryTargetPrediction
-    plaque_volume_percent: float
-    lumen_area: float
     recommendations: list[str]
 
 
-def _score_mock_risk(payload: PredictionRequest) -> PredictionResponse:
-    ffr_for_scoring = payload.ffr if payload.ffr is not None else 0.89
+def _risk_tier(probability: float) -> Literal["low", "moderate", "high"]:
+    if probability >= 0.65:
+        return "high"
+    if probability >= 0.35:
+        return "moderate"
+    return "low"
 
-    unstable = 0.08
-    unstable += 0.002 * max(payload.age - 55, 0)
-    unstable += 0.007 * max(payload.syntax_score - 8, 0)
-    unstable += 0.28 * max(0.88 - ffr_for_scoring, 0)
-    unstable += 0.004 * max(payload.cholesterol_level - 5.0, 0)
-    unstable += 0.003 * max(55 - payload.lvef_percent, 0)
 
-    if payload.diabetes_mellitus:
-        unstable += 0.08
-    if payload.hypertension:
-        unstable += 0.05
-    if payload.gender == "male":
-        unstable += 0.03
-    if payload.angina_functional_class >= 2:
-        unstable += 0.07
-    if payload.multifocal_atherosclerosis:
-        unstable += 0.05
-
-    unstable_probability = round(min(max(unstable, 0.02), 0.96), 3)
-
-    adverse = 0.03
-    adverse += 0.33 * unstable_probability
-    adverse += 0.004 * max(payload.syntax_score - 12, 0)
-    adverse += 0.003 * max(payload.age - 65, 0)
-    adverse += 0.002 * max(55 - payload.lvef_percent, 0)
-    if payload.post_infarction_cardiosclerosis:
-        adverse += 0.08
-    if payload.diabetes_mellitus:
-        adverse += 0.07
-    if payload.multifocal_atherosclerosis:
-        adverse += 0.05
-    if payload.ffr is None:
-        adverse += 0.02
-
-    adverse_probability = round(min(max(adverse, 0.01), 0.95), 3)
-    if adverse_probability >= 0.65:
-        risk_tier: Literal["low", "moderate", "high"] = "high"
-        recommendations = [
+def _recommendations(tier: Literal["low", "moderate", "high"]) -> list[str]:
+    if tier == "high":
+        return [
             "Discuss close cardiology follow-up within 2-4 weeks.",
             "Prioritize lipid, blood pressure, and glycemic optimization.",
             "Review indications for additional imaging or invasive reassessment.",
         ]
-    elif adverse_probability >= 0.35:
-        risk_tier = "moderate"
-        recommendations = [
+    if tier == "moderate":
+        return [
             "Schedule structured outpatient follow-up.",
             "Optimize modifiable risk factors and medication adherence.",
             "Repeat clinical reassessment in 6-8 weeks.",
         ]
-    else:
-        risk_tier = "low"
-        recommendations = [
-            "Continue preventive therapy and risk-factor control.",
-            "Maintain routine follow-up and symptom monitoring.",
-            "Escalate evaluation if symptoms worsen.",
-        ]
-
-    if unstable_probability >= 0.65:
-        unstable_risk_tier = "high"
-    elif unstable_probability >= 0.35:
-        unstable_risk_tier = "moderate"
-    else:
-        unstable_risk_tier = "low"
-
-    plaque_volume = 55.0
-    plaque_volume += 11.0 * unstable_probability
-    plaque_volume += 0.15 * max(payload.syntax_score - 8, 0)
-    plaque_volume -= 0.08 * max(ffr_for_scoring - 0.8, 0) * 100
-    plaque_volume = round(min(max(plaque_volume, 35.0), 95.0), 1)
-
-    lumen_area = 5.9
-    lumen_area -= 2.7 * unstable_probability
-    lumen_area -= 0.03 * max(payload.syntax_score - 8, 0)
-    lumen_area += 0.9 * max(ffr_for_scoring - 0.85, 0)
-    lumen_area = round(min(max(lumen_area, 1.0), 9.0), 2)
-
-    return PredictionResponse(
-        unstable_plaque=BinaryTargetPrediction(
-            probability=unstable_probability,
-            prediction=int(unstable_probability >= 0.5),
-            risk_tier=unstable_risk_tier,
-        ),
-        adverse_outcome=BinaryTargetPrediction(
-            probability=adverse_probability,
-            prediction=int(adverse_probability >= 0.5),
-            risk_tier=risk_tier,
-        ),
-        plaque_volume_percent=plaque_volume,
-        lumen_area=lumen_area,
-        recommendations=recommendations,
-    )
+    return [
+        "Continue preventive therapy and risk-factor control.",
+        "Maintain routine follow-up and symptom monitoring.",
+        "Escalate evaluation if symptoms worsen.",
+    ]
 
 
 @app.get("/health")
@@ -161,6 +116,22 @@ async def health_check():
 
 
 @app.post("/predict", response_model=PredictionResponse)
-async def predict_targets(payload: PredictionRequest):
-    """Mock endpoint for all current project targets."""
-    return _score_mock_risk(payload)
+async def predict_adverse_outcome(payload: PredictionRequest):
+    """Predict adverse cardiovascular outcome probability."""
+    try:
+        probability, prediction = predict(
+            app.state.predictor,
+            payload.model_dump(),
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    tier = _risk_tier(probability)
+    return PredictionResponse(
+        adverse_outcome=BinaryTargetPrediction(
+            probability=probability,
+            prediction=prediction,
+            risk_tier=tier,
+        ),
+        recommendations=_recommendations(tier),
+    )
