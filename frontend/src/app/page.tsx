@@ -55,6 +55,13 @@ const initialForm: PredictionRequest = {
   unstable_plaque: false,
 };
 
+const COMORBIDITIES: { key: keyof PredictionRequest; label: string }[] = [
+  { key: "diabetes_mellitus",            label: "Diabetes Mellitus" },
+  { key: "hypertension",                 label: "Hypertension" },
+  { key: "post_infarction_cardiosclerosis", label: "Post-MI Cardiosclerosis" },
+  { key: "multifocal_atherosclerosis",   label: "Multifocal Atherosclerosis" },
+];
+
 export default function Home() {
   const [form, setForm] = useState<PredictionRequest>(initialForm);
   const [ffrInput, setFfrInput] = useState<string>("0.83");
@@ -65,28 +72,20 @@ export default function Home() {
   const updateField = <K extends keyof PredictionRequest>(
     key: K,
     value: PredictionRequest[K],
-  ) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  };
+  ) => setForm((prev) => ({ ...prev, [key]: value }));
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     setError(null);
-
     try {
       const response = await fetch(`${API_BASE}/predict`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-
-      if (!response.ok) {
-        throw new Error("Prediction request failed.");
-      }
-
-      const payload = (await response.json()) as PredictionResponse;
-      setResult(payload);
+      if (!response.ok) throw new Error();
+      setResult((await response.json()) as PredictionResponse);
     } catch {
       setError("Prediction request failed. Verify backend is running.");
     } finally {
@@ -94,248 +93,213 @@ export default function Home() {
     }
   };
 
+  const tier = result?.adverse_outcome.risk_tier;
+  const gaugeStyle = result
+    ? ({
+        "--gauge-deg": `${Math.round(result.adverse_outcome.probability * 360)}deg`,
+        "--gauge-color":
+          tier === "high" ? "var(--high)" :
+          tier === "moderate" ? "var(--moderate)" :
+          "var(--low)",
+      } as React.CSSProperties)
+    : undefined;
+
   return (
     <main className="page-shell">
-      <section className="hero-card">
-        <p className="eyebrow">Cardiology</p>
-        <h1>Plaque Risk Explorer</h1>
-        <p className="hero-copy">
-          Enter clinical and imaging data to estimate adverse cardiovascular outcome risk.
+      <header className="site-header">
+        <span className="header-tag">Cardiology · Risk Analysis</span>
+        <h1>Plaque Risk<br />Explorer</h1>
+        <p className="header-sub">
+          Model-driven adverse outcome assessment from clinical and imaging parameters.
         </p>
-      </section>
+      </header>
 
-      <section className="content-grid">
-        <form className="panel" onSubmit={handleSubmit}>
+      <div className="content-grid">
+        {/* ── Form ── */}
+        <form className="form-panel" onSubmit={handleSubmit}>
 
-          <h2>Patient Profile</h2>
-          <div className="form-grid">
-            <label>
-              Gender
-              <select
-                value={form.gender}
-                onChange={(event) =>
-                  updateField("gender", event.currentTarget.value as "female" | "male")
-                }
-              >
-                <option value="female">Female</option>
-                <option value="male">Male</option>
-              </select>
-            </label>
-            <label>
-              Age
-              <input
-                type="number"
-                value={form.age}
-                min={30}
-                max={95}
-                onChange={(event) =>
-                  updateField("age", Number(event.currentTarget.value))
-                }
-              />
-            </label>
-            <label>
-              BMI
-              <input
-                type="number"
-                step="0.1"
-                value={form.bmi}
-                onChange={(event) =>
-                  updateField("bmi", Number(event.currentTarget.value))
-                }
-              />
-            </label>
+          <div className="form-section">
+            <div className="section-label">Patient Profile</div>
+            <div className="form-grid">
+              <label className="field">
+                <span className="field-label">Gender</span>
+                <select
+                  value={form.gender}
+                  onChange={(e) => updateField("gender", e.currentTarget.value as "female" | "male")}
+                >
+                  <option value="female">Female</option>
+                  <option value="male">Male</option>
+                </select>
+              </label>
+              <label className="field">
+                <span className="field-label">Age</span>
+                <input
+                  type="number" min={30} max={95}
+                  value={form.age}
+                  onChange={(e) => updateField("age", Number(e.currentTarget.value))}
+                />
+              </label>
+              <label className="field">
+                <span className="field-label">BMI</span>
+                <input
+                  type="number" step="0.1"
+                  value={form.bmi}
+                  onChange={(e) => updateField("bmi", Number(e.currentTarget.value))}
+                />
+              </label>
+            </div>
           </div>
 
-          <h2>Cardiac Function</h2>
-          <div className="form-grid">
-            <label>
-              Angina Functional Class
-              <select
-                value={form.angina_functional_class}
-                onChange={(event) =>
-                  updateField(
-                    "angina_functional_class",
-                    Number(event.currentTarget.value) as 0 | 1 | 2 | 3,
-                  )
-                }
-              >
-                <option value={0}>0</option>
-                <option value={1}>1</option>
-                <option value={2}>2</option>
-                <option value={3}>3</option>
-              </select>
-            </label>
-            <label>
-              LVEF (%)
-              <input
-                type="number"
-                step="0.1"
-                value={form.lvef_percent}
-                onChange={(event) =>
-                  updateField("lvef_percent", Number(event.currentTarget.value))
-                }
-              />
-            </label>
-            <label>
-              SYNTAX Score
-              <input
-                type="number"
-                step="0.1"
-                value={form.syntax_score}
-                onChange={(event) =>
-                  updateField("syntax_score", Number(event.currentTarget.value))
-                }
-              />
-            </label>
-            <label>
-              Cholesterol (mmol/L)
-              <input
-                type="number"
-                step="0.01"
-                value={form.cholesterol_level}
-                onChange={(event) =>
-                  updateField("cholesterol_level", Number(event.currentTarget.value))
-                }
-              />
-            </label>
-            <label>
-              FFR
-              <input
-                type="number"
-                step="0.01"
-                min={0.4}
-                max={1.0}
-                value={ffrInput}
-                onChange={(event) => {
-                  const value = event.currentTarget.value;
-                  setFfrInput(value);
-                  updateField("ffr", value === "" ? null : Number(value));
-                }}
-              />
-            </label>
+          <div className="form-section">
+            <div className="section-label">Cardiac Function</div>
+            <div className="form-grid">
+              <label className="field">
+                <span className="field-label">Angina Class</span>
+                <select
+                  value={form.angina_functional_class}
+                  onChange={(e) =>
+                    updateField("angina_functional_class", Number(e.currentTarget.value) as 0 | 1 | 2 | 3)
+                  }
+                >
+                  <option value={0}>0</option>
+                  <option value={1}>I</option>
+                  <option value={2}>II</option>
+                  <option value={3}>III</option>
+                </select>
+              </label>
+              <label className="field">
+                <span className="field-label">LVEF (%)</span>
+                <input
+                  type="number" step="0.1"
+                  value={form.lvef_percent}
+                  onChange={(e) => updateField("lvef_percent", Number(e.currentTarget.value))}
+                />
+              </label>
+              <label className="field">
+                <span className="field-label">SYNTAX Score</span>
+                <input
+                  type="number" step="0.1"
+                  value={form.syntax_score}
+                  onChange={(e) => updateField("syntax_score", Number(e.currentTarget.value))}
+                />
+              </label>
+              <label className="field">
+                <span className="field-label">Cholesterol (mmol/L)</span>
+                <input
+                  type="number" step="0.01"
+                  value={form.cholesterol_level}
+                  onChange={(e) => updateField("cholesterol_level", Number(e.currentTarget.value))}
+                />
+              </label>
+              <label className="field">
+                <span className="field-label">FFR</span>
+                <input
+                  type="number" step="0.01" min={0.4} max={1.0}
+                  value={ffrInput}
+                  onChange={(e) => {
+                    const v = e.currentTarget.value;
+                    setFfrInput(v);
+                    updateField("ffr", v === "" ? null : Number(v));
+                  }}
+                />
+              </label>
+            </div>
           </div>
 
-          <h2>Comorbidities</h2>
-          <div className="switch-row">
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={form.diabetes_mellitus}
-                onChange={(event) =>
-                  updateField("diabetes_mellitus", event.currentTarget.checked)
-                }
-              />
-              Diabetes Mellitus
-            </label>
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={form.hypertension}
-                onChange={(event) =>
-                  updateField("hypertension", event.currentTarget.checked)
-                }
-              />
-              Hypertension
-            </label>
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={form.post_infarction_cardiosclerosis}
-                onChange={(event) =>
-                  updateField("post_infarction_cardiosclerosis", event.currentTarget.checked)
-                }
-              />
-              Post-Infarction Cardiosclerosis
-            </label>
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={form.multifocal_atherosclerosis}
-                onChange={(event) =>
-                  updateField("multifocal_atherosclerosis", event.currentTarget.checked)
-                }
-              />
-              Multifocal Atherosclerosis
-            </label>
+          <div className="form-section">
+            <div className="section-label">Comorbidities</div>
+            <div className="toggle-grid">
+              {COMORBIDITIES.map(({ key, label }) => (
+                <label key={key} className="toggle-label">
+                  <input
+                    type="checkbox"
+                    checked={form[key] as boolean}
+                    onChange={(e) => updateField(key, e.currentTarget.checked)}
+                  />
+                  <span className="toggle-dot" />
+                  {label}
+                </label>
+              ))}
+            </div>
           </div>
 
-          <h2>Imaging</h2>
-          <div className="form-grid">
-            <label>
-              Plaque Volume (%)
-              <input
-                type="number"
-                step="0.1"
-                min={0}
-                max={100}
-                value={form.plaque_volume_percent}
-                onChange={(event) =>
-                  updateField("plaque_volume_percent", Number(event.currentTarget.value))
-                }
-              />
-            </label>
-            <label>
-              Lumen Area (mm²)
-              <input
-                type="number"
-                step="0.01"
-                min={0.5}
-                max={15}
-                value={form.lumen_area}
-                onChange={(event) =>
-                  updateField("lumen_area", Number(event.currentTarget.value))
-                }
-              />
-            </label>
-          </div>
-          <div className="switch-row">
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={form.unstable_plaque}
-                onChange={(event) =>
-                  updateField("unstable_plaque", event.currentTarget.checked)
-                }
-              />
-              Unstable Plaque
-            </label>
+          <div className="form-section">
+            <div className="section-label">Imaging</div>
+            <div className="form-grid">
+              <label className="field">
+                <span className="field-label">Plaque Volume (%)</span>
+                <input
+                  type="number" step="0.1" min={0} max={100}
+                  value={form.plaque_volume_percent}
+                  onChange={(e) => updateField("plaque_volume_percent", Number(e.currentTarget.value))}
+                />
+              </label>
+              <label className="field">
+                <span className="field-label">Lumen Area (mm²)</span>
+                <input
+                  type="number" step="0.01" min={0.5} max={15}
+                  value={form.lumen_area}
+                  onChange={(e) => updateField("lumen_area", Number(e.currentTarget.value))}
+                />
+              </label>
+            </div>
+            <div className="toggle-grid" style={{ gridTemplateColumns: "1fr", marginTop: "12px" }}>
+              <label className="toggle-label">
+                <input
+                  type="checkbox"
+                  checked={form.unstable_plaque}
+                  onChange={(e) => updateField("unstable_plaque", e.currentTarget.checked)}
+                />
+                <span className="toggle-dot" />
+                Unstable Plaque
+              </label>
+            </div>
           </div>
 
-          <button type="submit" className="btn-primary" disabled={isLoading}>
-            {isLoading ? "Calculating..." : "Run Prediction"}
+          <button className="run-btn" type="submit" disabled={isLoading}>
+            {isLoading ? (
+              <><span className="spinner" />Analyzing</>
+            ) : (
+              "Run Analysis"
+            )}
           </button>
         </form>
 
-        <div className="panel result-panel">
-          <h2>Adverse Outcome Prediction</h2>
+        {/* ── Result ── */}
+        <div className="result-panel">
+          <div className="result-heading">Adverse Outcome</div>
+
           {result ? (
             <>
-              <div className="target-cards-grid">
-                <article className="target-card">
-                  <p className={`risk-badge risk-${result.adverse_outcome.risk_tier}`}>
-                    ADVERSE OUTCOME: {result.adverse_outcome.risk_tier.toUpperCase()}
-                  </p>
-                  <p className="target-percent">
-                    {Math.round(result.adverse_outcome.probability * 100)}%
-                  </p>
-                </article>
+              <div className="gauge-wrap">
+                <div className="gauge-ring" style={gaugeStyle}>
+                  <div className="gauge-inner">
+                    <div className="gauge-percent">
+                      {Math.round(result.adverse_outcome.probability * 100)}%
+                    </div>
+                    <div className={`gauge-tier tier-${tier}`}>
+                      {tier}
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <ul className="recommendations">
+              <ul className={`recs recs-${tier}`}>
                 {result.recommendations.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>
             </>
           ) : (
-            <p className="placeholder">
-              Submit the form to estimate adverse cardiovascular outcome risk.
-            </p>
+            <div className="result-empty">
+              <div className="pulse-ring" />
+              <span>Awaiting input</span>
+            </div>
           )}
         </div>
-      </section>
+      </div>
 
-      {error ? <p className="error">{error}</p> : null}
+      {error && <div className="error-bar">{error}</div>}
     </main>
   );
 }
