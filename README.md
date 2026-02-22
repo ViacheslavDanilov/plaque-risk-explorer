@@ -33,16 +33,26 @@ Cardiac patients undergoing coronary interventions face risks of adverse outcome
 ```
 plaque-risk-explorer/
 ├── backend/                        # 🐍 Python Backend (UV workspace member)
-│   ├── src/plaque_risk_explorer/      # FastAPI application
-│   │   ├── __init__.py
-│   │   └── main.py                 # API endpoints
-│   ├── models/                     # Trained ML model artifacts
-│   ├── notebooks/                  # Jupyter notebooks (EDA, experiments)
-│   ├── scripts/                    # Training & preprocessing scripts
+│   ├── src/
+│   │   ├── plaque_risk_explorer/   # FastAPI application
+│   │   │   └── main.py             # API endpoints
+│   │   ├── ml/                     # ML modules
+│   │   │   ├── evaluation/         # Metrics & evaluation logic
+│   │   │   ├── inference/          # Prediction & SHAP inference
+│   │   │   ├── preprocessing/      # Feature engineering
+│   │   │   └── training/           # Model training
+│   │   └── scripts/                # Entry-point scripts
+│   │       ├── build.py            # Data preprocessing script
+│   │       ├── train.py            # Model training script
+│   │       └── evaluate.py         # Model evaluation script
 │   ├── data/                       # Datasets
 │   │   ├── source.csv              # Full processed dataset
-│   │   ├── features.csv            # Modeling dataset (selected features + targets)
+│   │   ├── features.csv            # Modeling dataset (selected features + target)
 │   │   └── features.md             # Notes on source vs features changes
+│   ├── models/                     # Trained ML model artifacts
+│   ├── reports/                    # Generated analysis reports
+│   │   ├── eda.md                  # Exploratory data analysis report
+│   │   └── model_performance.md    # Model evaluation & SHAP report
 │   └── pyproject.toml              # Backend dependencies
 │
 ├── frontend/                       # ⚛️ Next.js Frontend
