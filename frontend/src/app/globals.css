@@ -81,11 +81,15 @@ h1 {
 }
 
 h2 {
-  margin: 0 0 14px;
+  margin: 28px 0 14px;
   font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
+}
+
+.panel > h2:first-child {
+  margin-top: 0;
 }
 
 .form-grid {

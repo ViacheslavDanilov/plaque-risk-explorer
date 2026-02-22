@@ -1,22 +1,25 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState } from "react";
 
 type RiskTier = "low" | "moderate" | "high";
 
 type PredictionRequest = {
-  age: number;
   gender: "female" | "male";
+  age: number;
   angina_functional_class: 0 | 1 | 2 | 3;
   post_infarction_cardiosclerosis: boolean;
   multifocal_atherosclerosis: boolean;
   diabetes_mellitus: boolean;
   hypertension: boolean;
+  cholesterol_level: number;
   bmi: number;
   lvef_percent: number;
-  cholesterol_level: number;
-  ffr: number | null;
   syntax_score: number;
+  ffr: number | null;
+  plaque_volume_percent: number;
+  lumen_area: number;
+  unstable_plaque: boolean;
 };
 
 type BinaryTargetPrediction = {
@@ -26,10 +29,7 @@ type BinaryTargetPrediction = {
 };
 
 type PredictionResponse = {
-  unstable_plaque: BinaryTargetPrediction;
   adverse_outcome: BinaryTargetPrediction;
-  plaque_volume_percent: number;
-  lumen_area: number;
   recommendations: string[];
 };
 
@@ -38,18 +38,21 @@ const API_BASE =
   "http://localhost:8000";
 
 const initialForm: PredictionRequest = {
-  age: 62,
   gender: "male",
+  age: 62,
   angina_functional_class: 2,
   post_infarction_cardiosclerosis: false,
   multifocal_atherosclerosis: false,
   diabetes_mellitus: false,
   hypertension: true,
+  cholesterol_level: 5.2,
   bmi: 28,
   lvef_percent: 51,
-  cholesterol_level: 5.2,
-  ffr: 0.83,
   syntax_score: 18,
+  ffr: 0.83,
+  plaque_volume_percent: 60.0,
+  lumen_area: 5.0,
+  unstable_plaque: false,
 };
 
 export default function Home() {
@@ -66,7 +69,7 @@ export default function Home() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     setError(null);
@@ -97,27 +100,15 @@ export default function Home() {
         <p className="eyebrow">Cardiology</p>
         <h1>Plaque Risk Explorer</h1>
         <p className="hero-copy">
-          Enter clinical data to estimate plaque characteristics and adverse outcome risk.
+          Enter clinical and imaging data to estimate adverse cardiovascular outcome risk.
         </p>
       </section>
 
       <section className="content-grid">
         <form className="panel" onSubmit={handleSubmit}>
-          <h2>Clinical Input</h2>
-          <div className="form-grid">
-            <label>
-              Age
-              <input
-                type="number"
-                value={form.age}
-                min={30}
-                max={95}
-                onChange={(event) =>
-                  updateField("age", Number(event.currentTarget.value))
-                }
-              />
-            </label>
 
+          <h2>Patient Profile</h2>
+          <div className="form-grid">
             <label>
               Gender
               <select
@@ -130,7 +121,33 @@ export default function Home() {
                 <option value="male">Male</option>
               </select>
             </label>
+            <label>
+              Age
+              <input
+                type="number"
+                value={form.age}
+                min={30}
+                max={95}
+                onChange={(event) =>
+                  updateField("age", Number(event.currentTarget.value))
+                }
+              />
+            </label>
+            <label>
+              BMI
+              <input
+                type="number"
+                step="0.1"
+                value={form.bmi}
+                onChange={(event) =>
+                  updateField("bmi", Number(event.currentTarget.value))
+                }
+              />
+            </label>
+          </div>
 
+          <h2>Cardiac Function</h2>
+          <div className="form-grid">
             <label>
               Angina Functional Class
               <select
@@ -148,19 +165,6 @@ export default function Home() {
                 <option value={3}>3</option>
               </select>
             </label>
-
-            <label>
-              BMI
-              <input
-                type="number"
-                step="0.1"
-                value={form.bmi}
-                onChange={(event) =>
-                  updateField("bmi", Number(event.currentTarget.value))
-                }
-              />
-            </label>
-
             <label>
               LVEF (%)
               <input
@@ -172,7 +176,17 @@ export default function Home() {
                 }
               />
             </label>
-
+            <label>
+              SYNTAX Score
+              <input
+                type="number"
+                step="0.1"
+                value={form.syntax_score}
+                onChange={(event) =>
+                  updateField("syntax_score", Number(event.currentTarget.value))
+                }
+              />
+            </label>
             <label>
               Cholesterol (mmol/L)
               <input
@@ -184,9 +198,8 @@ export default function Home() {
                 }
               />
             </label>
-
             <label>
-              FFR (leave blank if unavailable)
+              FFR
               <input
                 type="number"
                 step="0.01"
@@ -200,21 +213,30 @@ export default function Home() {
                 }}
               />
             </label>
-
-            <label>
-              SYNTAX Score
-              <input
-                type="number"
-                step="0.1"
-                value={form.syntax_score}
-                onChange={(event) =>
-                  updateField("syntax_score", Number(event.currentTarget.value))
-                }
-              />
-            </label>
           </div>
 
+          <h2>Comorbidities</h2>
           <div className="switch-row">
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={form.diabetes_mellitus}
+                onChange={(event) =>
+                  updateField("diabetes_mellitus", event.currentTarget.checked)
+                }
+              />
+              Diabetes Mellitus
+            </label>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={form.hypertension}
+                onChange={(event) =>
+                  updateField("hypertension", event.currentTarget.checked)
+                }
+              />
+              Hypertension
+            </label>
             <label className="switch">
               <input
                 type="checkbox"
@@ -237,26 +259,45 @@ export default function Home() {
             </label>
           </div>
 
+          <h2>Imaging</h2>
+          <div className="form-grid">
+            <label>
+              Plaque Volume (%)
+              <input
+                type="number"
+                step="0.1"
+                min={0}
+                max={100}
+                value={form.plaque_volume_percent}
+                onChange={(event) =>
+                  updateField("plaque_volume_percent", Number(event.currentTarget.value))
+                }
+              />
+            </label>
+            <label>
+              Lumen Area (mm²)
+              <input
+                type="number"
+                step="0.01"
+                min={0.5}
+                max={15}
+                value={form.lumen_area}
+                onChange={(event) =>
+                  updateField("lumen_area", Number(event.currentTarget.value))
+                }
+              />
+            </label>
+          </div>
           <div className="switch-row">
             <label className="switch">
               <input
                 type="checkbox"
-                checked={form.diabetes_mellitus}
+                checked={form.unstable_plaque}
                 onChange={(event) =>
-                  updateField("diabetes_mellitus", event.currentTarget.checked)
+                  updateField("unstable_plaque", event.currentTarget.checked)
                 }
               />
-              Diabetes Mellitus
-            </label>
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={form.hypertension}
-                onChange={(event) =>
-                  updateField("hypertension", event.currentTarget.checked)
-                }
-              />
-              Hypertension
+              Unstable Plaque
             </label>
           </div>
 
@@ -266,39 +307,16 @@ export default function Home() {
         </form>
 
         <div className="panel result-panel">
-          <h2>Target Predictions</h2>
+          <h2>Adverse Outcome Prediction</h2>
           {result ? (
             <>
               <div className="target-cards-grid">
-                <article className="target-card">
-                  <p className={`risk-badge risk-${result.unstable_plaque.risk_tier}`}>
-                    UNSTABLE PLAQUE: {result.unstable_plaque.risk_tier.toUpperCase()}
-                  </p>
-                  <p className="target-percent">
-                    {Math.round(result.unstable_plaque.probability * 100)}%
-                  </p>
-                </article>
                 <article className="target-card">
                   <p className={`risk-badge risk-${result.adverse_outcome.risk_tier}`}>
                     ADVERSE OUTCOME: {result.adverse_outcome.risk_tier.toUpperCase()}
                   </p>
                   <p className="target-percent">
                     {Math.round(result.adverse_outcome.probability * 100)}%
-                  </p>
-                </article>
-              </div>
-
-              <div className="secondary-targets-grid">
-                <article className="target-card target-card-secondary">
-                  <p className="risk-badge risk-low">PLAQUE VOLUME</p>
-                  <p className="target-percent">
-                    {Math.round(result.plaque_volume_percent)}%
-                  </p>
-                </article>
-                <article className="target-card target-card-secondary">
-                  <p className="risk-badge risk-low">LUMEN AREA</p>
-                  <p className="target-percent">
-                    {Number(result.lumen_area.toPrecision(2))}
                   </p>
                 </article>
               </div>
@@ -311,7 +329,7 @@ export default function Home() {
             </>
           ) : (
             <p className="placeholder">
-              Submit the form to preview predictions for all current targets.
+              Submit the form to estimate adverse cardiovascular outcome risk.
             </p>
           )}
         </div>

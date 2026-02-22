@@ -14,7 +14,7 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Plaque Risk Explorer Demo",
+  title: "Plaque Risk Explorer",
   description: "Interactive demo UI for mock cardiovascular risk prediction.",
 };
 
@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${manrope.variable} ${spaceMono.variable} antialiased`}>
+      <body className={`${manrope.variable} ${spaceMono.variable} antialiased`} suppressHydrationWarning>
         {children}
       </body>
     </html>
