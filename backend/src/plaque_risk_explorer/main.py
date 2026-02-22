@@ -16,7 +16,9 @@ default_origins = [
     "http://127.0.0.1:3000",
 ]
 cors_origins_env = os.getenv("CORS_ORIGINS", "")
-env_origins = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
+env_origins = [
+    origin.strip() for origin in cors_origins_env.split(",") if origin.strip()
+]
 
 app.add_middleware(
     CORSMiddleware,
