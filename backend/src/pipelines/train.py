@@ -1,5 +1,4 @@
 import argparse
-import warnings
 from pathlib import Path
 
 from ml.train import train_model
@@ -27,7 +26,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--time-limit",
         type=int,
-        default=120,
+        default=3600,
         metavar="SECONDS",
         help="AutoGluon time budget in seconds (default: 120). "
         "Use 3600+ for highest accuracy on a server.",
@@ -37,13 +36,6 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = _parse_args()
-
-    warnings.warn(
-        "Training on n=56 with only 5 positive cases per target. "
-        "These models are exploratory only and must not be used for clinical decisions.",
-        UserWarning,
-        stacklevel=2,
-    )
     args.model_dir.mkdir(parents=True, exist_ok=True)
     train_model(
         features_csv=args.features_csv,
