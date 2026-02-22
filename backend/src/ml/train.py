@@ -62,10 +62,16 @@ def _fit_predictor(
 def train_adverse_outcome_model(
     features_csv: Path,
     model_dir: Path,
+    time_limit: int = 120,
 ) -> TabularPredictor:
     """Train and persist the adverse_outcome binary classifier."""
     df = pd.read_csv(features_csv)
-    predictor = _fit_predictor(df, label="adverse_outcome", model_dir=model_dir)
+    predictor = _fit_predictor(
+        df,
+        label="adverse_outcome",
+        model_dir=model_dir,
+        time_limit=time_limit,
+    )
     print("\n--- adverse_outcome leaderboard ---")
     print(predictor.leaderboard(silent=True).to_string())
     return predictor
@@ -74,10 +80,16 @@ def train_adverse_outcome_model(
 def train_unstable_plaque_model(
     features_csv: Path,
     model_dir: Path,
+    time_limit: int = 120,
 ) -> TabularPredictor:
     """Train and persist the unstable_plaque binary classifier."""
     df = pd.read_csv(features_csv)
-    predictor = _fit_predictor(df, label="unstable_plaque", model_dir=model_dir)
+    predictor = _fit_predictor(
+        df,
+        label="unstable_plaque",
+        model_dir=model_dir,
+        time_limit=time_limit,
+    )
     print("\n--- unstable_plaque leaderboard ---")
     print(predictor.leaderboard(silent=True).to_string())
     return predictor

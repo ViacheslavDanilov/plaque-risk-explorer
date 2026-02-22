@@ -1,3 +1,4 @@
+import argparse
 import warnings
 from pathlib import Path
 
@@ -7,9 +8,35 @@ from ml.train import train_adverse_outcome_model, train_unstable_plaque_model
 _BACKEND_ROOT = Path(__file__).resolve().parents[2]
 
 
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Train plaque risk models.")
+    parser.add_argument(
+        "--features-csv",
+        type=Path,
+        default=_BACKEND_ROOT / "data" / "features.csv",
+        metavar="PATH",
+        help="Path to the features CSV file.",
+    )
+    parser.add_argument(
+        "--model-dir",
+        type=Path,
+        default=_BACKEND_ROOT / "models",
+        metavar="PATH",
+        help="Directory where trained models will be saved.",
+    )
+    parser.add_argument(
+        "--time-limit",
+        type=int,
+        default=120,
+        metavar="SECONDS",
+        help="AutoGluon time budget per model in seconds (default: 120). "
+        "Use 3600+ for highest accuracy on a server.",
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
-    features_csv = _BACKEND_ROOT / "data" / "features.csv"
-    model_dir = _BACKEND_ROOT / "models"
+    args = _parse_args()
 
     warnings.warn(
         "Training on n=56 with only 5 positive cases per target. "
@@ -17,9 +44,17 @@ def main() -> None:
         UserWarning,
         stacklevel=2,
     )
-    model_dir.mkdir(parents=True, exist_ok=True)
-    train_adverse_outcome_model(features_csv=features_csv, model_dir=model_dir)
-    train_unstable_plaque_model(features_csv=features_csv, model_dir=model_dir)
+    args.model_dir.mkdir(parents=True, exist_ok=True)
+    train_adverse_outcome_model(
+        features_csv=args.features_csv,
+        model_dir=args.model_dir,
+        time_limit=args.time_limit,
+    )
+    train_unstable_plaque_model(
+        features_csv=args.features_csv,
+        model_dir=args.model_dir,
+        time_limit=args.time_limit,
+    )
 
 
 if __name__ == "__main__":
