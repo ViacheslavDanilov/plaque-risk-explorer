@@ -1,4 +1,3 @@
-import warnings
 from pathlib import Path
 
 import pandas as pd
@@ -82,16 +81,3 @@ def train_unstable_plaque_model(
     print("\n--- unstable_plaque leaderboard ---")
     print(predictor.leaderboard(silent=True).to_string())
     return predictor
-
-
-def train_all_models(features_csv: Path, model_dir: Path) -> None:
-    """Train both binary classifiers and emit an exploratory-data caveat."""
-    warnings.warn(
-        "Training on n=56 with only 5 positive cases per target. "
-        "These models are exploratory only and must not be used for clinical decisions.",
-        UserWarning,
-        stacklevel=2,
-    )
-    model_dir.mkdir(parents=True, exist_ok=True)
-    train_adverse_outcome_model(features_csv=features_csv, model_dir=model_dir)
-    train_unstable_plaque_model(features_csv=features_csv, model_dir=model_dir)
