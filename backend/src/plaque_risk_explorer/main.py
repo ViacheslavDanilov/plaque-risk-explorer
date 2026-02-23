@@ -76,24 +76,10 @@ class BinaryTargetPrediction(BaseModel):
     risk_tier: Literal["low", "moderate", "high"]
 
 
-class FeatureEffect(BaseModel):
-    feature: str
-    effect: float
-    direction: Literal["increase", "decrease", "neutral"]
-    patient_value: str | float | int | bool | None
-    reference_value: str | float | int | bool | None
-
-
-class Explainability(BaseModel):
-    method: Literal["counterfactual_single_feature_delta"]
-    baseline_probability: float
-    feature_effects: list[FeatureEffect]
-
-
 class PredictionResponse(BaseModel):
     adverse_outcome: BinaryTargetPrediction
     recommendations: list[str]
-    explanation: Explainability
+    explanation: dict[str, object]
 
 
 def _risk_tier(probability: float) -> Literal["low", "moderate", "high"]:
@@ -150,5 +136,5 @@ async def predict_adverse_outcome(payload: PredictionRequest):
             risk_tier=tier,
         ),
         recommendations=_recommendations(tier),
-        explanation=Explainability(**explanation),
+        explanation=explanation,
     )

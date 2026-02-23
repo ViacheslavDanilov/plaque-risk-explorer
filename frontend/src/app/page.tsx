@@ -79,49 +79,17 @@ const COMORBIDITIES: { key: keyof PredictionRequest; label: string }[] = [
   { key: "multifocal_atherosclerosis",   label: "Multifocal Atherosclerosis" },
 ];
 
-const FEATURE_LABELS: Record<string, string> = {
-  gender: "Gender",
-  age: "Age",
-  angina_functional_class: "Angina Class",
-  post_infarction_cardiosclerosis: "Post-MI Cardiosclerosis",
-  multifocal_atherosclerosis: "Multifocal Atherosclerosis",
-  diabetes_mellitus: "Diabetes Mellitus",
-  hypertension: "Hypertension",
-  cholesterol_level: "Cholesterol",
-  bmi: "BMI",
-  lvef_percent: "LVEF",
-  syntax_score: "SYNTAX Score",
-  ffr: "FFR",
-  plaque_volume_percent: "Plaque Volume",
-  lumen_area: "Lumen Area",
-  unstable_plaque: "Unstable Plaque",
-};
-
-const FEATURE_PRECISION: Partial<Record<string, number>> = {
-  age: 0,
-  angina_functional_class: 0,
-  cholesterol_level: 2,
-  bmi: 1,
-  lvef_percent: 1,
-  syntax_score: 1,
-  ffr: 2,
-  plaque_volume_percent: 1,
-  lumen_area: 2,
-};
-
 const humanizeFeature = (feature: string): string =>
-  FEATURE_LABELS[feature] ??
   feature
     .split("_")
     .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
     .join(" ");
 
-const formatFeatureValue = (feature: string, value: SerializedValue): string => {
+const formatFeatureValue = (value: SerializedValue): string => {
   if (value === null) return "missing";
   if (typeof value === "boolean") return value ? "yes" : "no";
   if (typeof value === "number") {
-    const precision = FEATURE_PRECISION[feature] ?? 2;
-    return value.toFixed(precision);
+    return Number.isInteger(value) ? `${value}` : value.toFixed(2);
   }
   return value;
 };
@@ -381,8 +349,8 @@ export default function Home() {
                         </span>
                       </div>
                       <div className="effect-context">
-                        patient {formatFeatureValue(effect.feature, effect.patient_value)} ·
-                        baseline {formatFeatureValue(effect.feature, effect.reference_value)}
+                        patient {formatFeatureValue(effect.patient_value)} ·
+                        baseline {formatFeatureValue(effect.reference_value)}
                       </div>
                     </li>
                   ))}
