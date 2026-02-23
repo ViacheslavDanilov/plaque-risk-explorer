@@ -28,9 +28,26 @@ type BinaryTargetPrediction = {
   risk_tier: RiskTier;
 };
 
+type SerializedValue = string | number | boolean | null;
+
+type FeatureEffect = {
+  feature: string;
+  effect: number;
+  direction: "increase" | "decrease" | "neutral";
+  patient_value: SerializedValue;
+  reference_value: SerializedValue;
+};
+
+type Explainability = {
+  method: "counterfactual_single_feature_delta";
+  baseline_probability: number;
+  feature_effects: FeatureEffect[];
+};
+
 type PredictionResponse = {
   adverse_outcome: BinaryTargetPrediction;
   recommendations: string[];
+  explanation: Explainability;
 };
 
 const API_BASE =
@@ -61,6 +78,56 @@ const COMORBIDITIES: { key: keyof PredictionRequest; label: string }[] = [
   { key: "post_infarction_cardiosclerosis", label: "Post-MI Cardiosclerosis" },
   { key: "multifocal_atherosclerosis",   label: "Multifocal Atherosclerosis" },
 ];
+
+const FEATURE_LABELS: Record<string, string> = {
+  gender: "Gender",
+  age: "Age",
+  angina_functional_class: "Angina Class",
+  post_infarction_cardiosclerosis: "Post-MI Cardiosclerosis",
+  multifocal_atherosclerosis: "Multifocal Atherosclerosis",
+  diabetes_mellitus: "Diabetes Mellitus",
+  hypertension: "Hypertension",
+  cholesterol_level: "Cholesterol",
+  bmi: "BMI",
+  lvef_percent: "LVEF",
+  syntax_score: "SYNTAX Score",
+  ffr: "FFR",
+  plaque_volume_percent: "Plaque Volume",
+  lumen_area: "Lumen Area",
+  unstable_plaque: "Unstable Plaque",
+};
+
+const FEATURE_PRECISION: Partial<Record<string, number>> = {
+  age: 0,
+  angina_functional_class: 0,
+  cholesterol_level: 2,
+  bmi: 1,
+  lvef_percent: 1,
+  syntax_score: 1,
+  ffr: 2,
+  plaque_volume_percent: 1,
+  lumen_area: 2,
+};
+
+const humanizeFeature = (feature: string): string =>
+  FEATURE_LABELS[feature] ??
+  feature
+    .split("_")
+    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .join(" ");
+
+const formatFeatureValue = (feature: string, value: SerializedValue): string => {
+  if (value === null) return "missing";
+  if (typeof value === "boolean") return value ? "yes" : "no";
+  if (typeof value === "number") {
+    const precision = FEATURE_PRECISION[feature] ?? 2;
+    return value.toFixed(precision);
+  }
+  return value;
+};
+
+const formatEffect = (effect: number): string =>
+  `${effect >= 0 ? "+" : "-"}${Math.abs(effect * 100).toFixed(1)} pp`;
 
 export default function Home() {
   const [form, setForm] = useState<PredictionRequest>(initialForm);
@@ -103,6 +170,7 @@ export default function Home() {
           "var(--low)",
       } as React.CSSProperties)
     : undefined;
+  const topEffects = result?.explanation.feature_effects.slice(0, 8) ?? [];
 
   return (
     <main className="page-shell">
@@ -289,6 +357,41 @@ export default function Home() {
                   <li key={item}>{item}</li>
                 ))}
               </ul>
+
+              <section className="explanation-block">
+                <div className="explanation-head">
+                  <span>Feature Effects</span>
+                  <span>
+                    Baseline {Math.round(result.explanation.baseline_probability * 100)}%
+                  </span>
+                </div>
+
+                <ul className="effects-list">
+                  {topEffects.map((effect) => (
+                    <li key={effect.feature} className="effect-item">
+                      <div className="effect-line">
+                        <span className="effect-name">
+                          {humanizeFeature(effect.feature)}
+                        </span>
+                        <span
+                          className={`effect-delta effect-${effect.direction}`}
+                          title="Change in risk if this feature is replaced with baseline."
+                        >
+                          {formatEffect(effect.effect)}
+                        </span>
+                      </div>
+                      <div className="effect-context">
+                        patient {formatFeatureValue(effect.feature, effect.patient_value)} ·
+                        baseline {formatFeatureValue(effect.feature, effect.reference_value)}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                <p className="effects-note">
+                  Delta in predicted risk when one feature is swapped with baseline.
+                </p>
+              </section>
             </>
           ) : (
             <div className="result-empty">

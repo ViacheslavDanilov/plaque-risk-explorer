@@ -66,6 +66,10 @@ def train_model(
 
     leaderboard.to_csv(target_dir / "leaderboard.csv", index=False)
 
+    # Save a small baseline cohort used to construct a reference profile at inference.
+    baseline_df = df[FEATURES].sample(n=min(50, len(df)), random_state=42)
+    baseline_df.to_csv(target_dir / "baseline.csv", index=False)
+
     training_info = {
         "trained_at": datetime.now(UTC).isoformat(),
         "time_limit_seconds": time_limit,

@@ -411,6 +411,79 @@ select:focus {
 .recs-moderate li { border-left-color: var(--moderate); }
 .recs-high     li { border-left-color: var(--high); }
 
+/* ── Explanation ────────────────────────────── */
+.explanation-block {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.explanation-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.effects-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.effect-item {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.effect-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.effect-name {
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--text);
+}
+
+.effect-delta {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.effect-increase { color: var(--high); }
+.effect-decrease { color: var(--low); }
+.effect-neutral  { color: var(--muted); }
+
+.effect-context {
+  margin-top: 5px;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.effects-note {
+  margin: 10px 0 0;
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.45;
+  letter-spacing: 0.015em;
+}
+
 /* ── Empty state ────────────────────────────── */
 .result-empty {
   flex: 1;
