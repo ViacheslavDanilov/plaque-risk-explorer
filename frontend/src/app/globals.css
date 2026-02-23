@@ -528,19 +528,24 @@ select:focus {
   position: absolute;
   top: 2px;
   bottom: 2px;
-  border-radius: 999px;
+  border-radius: 0;
 }
 
 .waterfall-increase {
   background: rgba(240, 65, 85, 0.86);
+  border-top-right-radius: 999px;
+  border-bottom-right-radius: 999px;
 }
 
 .waterfall-decrease {
   background: rgba(0, 228, 170, 0.86);
+  border-top-left-radius: 999px;
+  border-bottom-left-radius: 999px;
 }
 
 .waterfall-neutral {
   background: rgba(61, 98, 120, 0.7);
+  border-radius: 0;
 }
 
 .waterfall-values {
