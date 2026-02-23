@@ -168,28 +168,23 @@ export default function Home() {
       });
     }
 
-    let running = baseline;
-    const segments = selected.map((effect, index) => {
-      const start = running;
-      const end = running + effect.effect;
-      running = end;
-      return { ...effect, key: `${effect.feature}-${index}`, start, end };
-    });
-
-    const bounds = [baseline, target, ...segments.flatMap(({ start, end }) => [start, end])];
-    const min = Math.min(...bounds);
-    const max = Math.max(...bounds);
-    const span = Math.max(max - min, 0.001);
+    const deltaToFinal = target - baseline;
+    const maxAbs = Math.max(
+      Math.abs(deltaToFinal),
+      ...selected.map((segment) => Math.abs(segment.effect)),
+      0.001,
+    );
+    const axisHalfWidth = 40;
+    const baselinePos = 50;
 
     return {
       baseline,
       target,
-      baselinePos: ((baseline - min) / span) * 100,
-      finalPos: ((target - min) / span) * 100,
-      segments: segments.map((segment) => {
-        const left = ((Math.min(segment.start, segment.end) - min) / span) * 100;
-        const width = Math.max((Math.abs(segment.end - segment.start) / span) * 100, 1.2);
-        return { ...segment, left, width };
+      baselinePos,
+      segments: selected.map((segment, index) => {
+        const width = Math.max((Math.abs(segment.effect) / maxAbs) * axisHalfWidth, 1.2);
+        const left = segment.effect >= 0 ? baselinePos : baselinePos - width;
+        return { ...segment, key: `${segment.feature}-${index}`, left, width };
       }),
     };
   })();
@@ -383,7 +378,6 @@ export default function Home() {
               <section className="explanation-block">
                 <div className="explanation-head">
                   <span>Feature Effects</span>
-                  <span>{formatPercent(result.adverse_outcome.probability)} risk</span>
                 </div>
 
                 {waterfall && (
@@ -411,10 +405,6 @@ export default function Home() {
                             <span
                               className="waterfall-marker waterfall-marker-base"
                               style={{ left: `${waterfall.baselinePos}%` }}
-                            />
-                            <span
-                              className="waterfall-marker waterfall-marker-final"
-                              style={{ left: `${waterfall.finalPos}%` }}
                             />
                             <span
                               className={`waterfall-bar waterfall-${segment.direction}`}

@@ -500,10 +500,6 @@ select:focus {
   background: rgba(189, 212, 228, 0.45);
 }
 
-.waterfall-marker-final {
-  background: rgba(0, 228, 170, 0.55);
-}
-
 .waterfall-bar {
   position: absolute;
   top: 2px;
