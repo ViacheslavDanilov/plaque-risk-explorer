@@ -79,11 +79,20 @@ const COMORBIDITIES: { key: keyof PredictionRequest; label: string }[] = [
   { key: "multifocal_atherosclerosis",   label: "Multifocal Atherosclerosis" },
 ];
 
-const humanizeFeature = (feature: string): string =>
-  feature
+const humanizeFeature = (feature: string): string => {
+  if (feature === "lvef_percent") return "LVEF";
+  if (feature === "cholesterol_level") return "Cholesterol";
+
+  return feature
     .split("_")
-    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .map((word) => {
+      if (word === "ffr" || word === "bmi" || word === "lvef" || word === "syntax") {
+        return word.toUpperCase();
+      }
+      return `${word.charAt(0).toUpperCase()}${word.slice(1)}`;
+    })
     .join(" ");
+};
 
 const formatFeatureValue = (value: SerializedValue): string => {
   if (value === null) return "missing";
