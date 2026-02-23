@@ -2993,6 +2993,7 @@ name = "plaque-risk-explorer"
 version = "0.1.0"
 source = { editable = "backend" }
 dependencies = [
+    { name = "autogluon" },
     { name = "fastapi" },
     { name = "numpy" },
     { name = "pandas" },
@@ -3002,7 +3003,6 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "autogluon" },
     { name = "httpx" },
     { name = "mypy" },
     { name = "pre-commit" },
@@ -3012,6 +3012,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "autogluon", specifier = ">=1.5.0" },
     { name = "fastapi", specifier = ">=0.115.0" },
     { name = "numpy", specifier = ">=2.0.0" },
     { name = "pandas", specifier = ">=2.2.0" },
@@ -3021,7 +3022,6 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "autogluon", specifier = ">=1.5.0" },
     { name = "httpx", specifier = ">=0.28.0" },
     { name = "mypy", specifier = ">=1.14.0" },
     { name = "pre-commit", specifier = ">=4.5.1" },
