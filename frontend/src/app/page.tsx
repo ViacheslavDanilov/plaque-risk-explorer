@@ -232,7 +232,10 @@ export default function Home() {
         <span className="header-tag">Cardiology · Risk Analysis</span>
         <h1>Plaque Risk<br />Explorer</h1>
         <p className="header-sub">
-          Model-driven adverse outcome assessment from clinical and imaging parameters.
+          Estimate the probability of adverse cardiovascular outcomes using patient
+          profile, cardiac function, comorbidities, and imaging findings. Review a
+          feature-effect waterfall to see which factors increase or decrease the
+          predicted risk.
         </p>
       </header>
 

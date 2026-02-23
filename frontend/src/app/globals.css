@@ -70,9 +70,9 @@ h1 {
   font-family: var(--font-display), serif;
   font-weight: 400;
   font-size: clamp(3rem, 6.5vw, 5rem);
-  line-height: 0.93;
-  letter-spacing: -0.015em;
-  margin: 0 0 20px;
+  line-height: 0.99;
+  letter-spacing: -0.01em;
+  margin: 0 0 22px;
   color: var(--text-strong);
 }
 
@@ -80,7 +80,7 @@ h1 {
   margin: 0;
   font-size: 12px;
   color: var(--muted);
-  max-width: 52ch;
+  max-width: 60ch;
   letter-spacing: 0.02em;
 }
 
