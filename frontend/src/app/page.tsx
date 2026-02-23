@@ -377,7 +377,35 @@ export default function Home() {
 
               <section className="explanation-block">
                 <div className="explanation-head">
-                  <span>Feature Effects</span>
+                  <span className="explanation-head-main">
+                    Feature Effects
+                    <button
+                      type="button"
+                      className="effects-info"
+                      aria-label="How to read Feature Effects"
+                    >
+                      <svg
+                        className="effects-info-icon"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 2a8 8 0 100 16 8 8 0 000-16zm.75 4.75a.75.75 0 10-1.5 0v.5a.75.75 0 001.5 0v-.5zm0 3.5a.75.75 0 00-1.5 0v3a.75.75 0 001.5 0v-3z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="effects-tooltip">
+                        Baseline is the model&apos;s starting risk for a typical patient
+                        profile. It is calculated from the baseline reference values in
+                        the training data (for example, median values for numeric
+                        features). Each bar then shows how one feature moves risk up
+                        (red) or down (green) from that starting point. Example:
+                        baseline 22% with -2.7% gives about 19.3%.
+                      </span>
+                    </button>
+                  </span>
                 </div>
 
                 {waterfall && (
@@ -427,10 +455,6 @@ export default function Home() {
                   </>
                 )}
 
-                <p className="effects-note">
-                  Waterfall view: baseline risk adjusted by per-feature deltas (absolute
-                  risk change, not relative percent).
-                </p>
               </section>
             </>
           ) : (

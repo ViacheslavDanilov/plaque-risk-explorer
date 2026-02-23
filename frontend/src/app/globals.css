@@ -421,13 +421,18 @@ select:focus {
 .explanation-head {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
+  justify-content: flex-start;
   margin-bottom: 10px;
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+.explanation-head-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .waterfall-summary {
@@ -525,12 +530,63 @@ select:focus {
   letter-spacing: 0.02em;
 }
 
-.effects-note {
-  margin: 10px 0 0;
-  font-size: 10px;
+.effects-info {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: transparent;
   color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  flex-shrink: 0;
+  padding: 0;
+  transition: color 140ms ease;
+}
+
+.effects-info:hover {
+  color: var(--text);
+}
+
+.effects-info-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.effects-info:focus-visible {
+  outline: none;
+  color: var(--text);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+  border-radius: 999px;
+}
+
+.effects-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  width: min(260px, 70vw);
+  padding: 9px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-hi);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 10px;
   line-height: 1.45;
   letter-spacing: 0.015em;
+  opacity: 0;
+  transform: translate(-50%, 4px);
+  pointer-events: none;
+  transition: opacity 130ms ease, transform 130ms ease;
+  z-index: 2;
+}
+
+.effects-info:hover .effects-tooltip,
+.effects-info:focus-visible .effects-tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 /* ── Empty state ────────────────────────────── */
