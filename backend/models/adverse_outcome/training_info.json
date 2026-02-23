@@ -1,0 +1,31 @@
+{
+  "trained_at": "2026-02-23T17:38:56.016360+00:00",
+  "model_type": "sklearn_pipeline_logistic_regression_onnx",
+  "max_iter": 2000,
+  "cv_folds_requested": 5,
+  "cv_folds_used": 5,
+  "features": [
+    "gender",
+    "age",
+    "angina_functional_class",
+    "post_infarction_cardiosclerosis",
+    "multifocal_atherosclerosis",
+    "diabetes_mellitus",
+    "hypertension",
+    "cholesterol_level",
+    "bmi",
+    "lvef_percent",
+    "syntax_score",
+    "ffr",
+    "plaque_volume_percent",
+    "lumen_area",
+    "unstable_plaque"
+  ],
+  "n_samples": 56,
+  "n_positive": 5,
+  "n_negative": 51,
+  "train_roc_auc": 0.8275,
+  "cv_roc_auc_mean": 0.1309,
+  "cv_roc_auc_std": 0.1679,
+  "onnx_model_file": "model.onnx"
+}

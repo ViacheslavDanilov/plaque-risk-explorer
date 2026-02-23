@@ -37,4 +37,4 @@ Thumbs.db
 !.claude/skills/**/SKILL.md
 
 # Models
-backend/models/*/
+!backend/models/adverse_outcome

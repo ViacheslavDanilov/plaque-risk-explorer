@@ -1,0 +1,27 @@
+{
+  "label": "adverse_outcome",
+  "model_file": "model.onnx",
+  "features": [
+    "gender",
+    "age",
+    "angina_functional_class",
+    "post_infarction_cardiosclerosis",
+    "multifocal_atherosclerosis",
+    "diabetes_mellitus",
+    "hypertension",
+    "cholesterol_level",
+    "bmi",
+    "lvef_percent",
+    "syntax_score",
+    "ffr",
+    "plaque_volume_percent",
+    "lumen_area",
+    "unstable_plaque"
+  ],
+  "categorical_features": [
+    "gender"
+  ],
+  "positive_class": 1,
+  "positive_class_index": 1,
+  "onnx_opset": 17
+}
