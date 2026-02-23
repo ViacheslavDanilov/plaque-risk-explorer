@@ -102,13 +102,12 @@ h1 {
 }
 
 .form-section {
-  padding-bottom: 28px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 28px;
+  border: none;
+  padding-bottom: 0;
+  margin-bottom: 20px;
 }
 
 .form-section:last-of-type {
-  border-bottom: none;
   padding-bottom: 0;
   margin-bottom: 0;
 }
@@ -130,6 +129,15 @@ h1 {
   flex: 1;
   height: 1px;
   background: var(--border);
+  align-self: center;
+}
+
+.section-label-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1;
+  min-height: 18px;
 }
 
 /* ── Field grid ─────────────────────────────── */
@@ -324,6 +332,15 @@ select:focus {
   flex: 1;
   height: 1px;
   background: var(--border);
+  align-self: center;
+}
+
+.result-heading-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1;
+  min-height: 18px;
 }
 
 /* ── Gauge ──────────────────────────────────── */
@@ -430,9 +447,11 @@ select:focus {
 }
 
 .explanation-head-main {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
+  line-height: 1;
+  min-height: 18px;
 }
 
 .waterfall-summary {
@@ -543,6 +562,8 @@ select:focus {
   cursor: help;
   flex-shrink: 0;
   padding: 0;
+  margin: 0;
+  align-self: center;
   transition: color 140ms ease;
 }
 
@@ -576,6 +597,8 @@ select:focus {
   font-size: 10px;
   line-height: 1.45;
   letter-spacing: 0.015em;
+  text-transform: none;
+  font-weight: 400;
   opacity: 0;
   transform: translate(-50%, 4px);
   pointer-events: none;

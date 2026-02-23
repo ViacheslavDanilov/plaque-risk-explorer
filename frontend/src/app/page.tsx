@@ -108,6 +108,26 @@ const formatEffect = (effect: number): string =>
 
 const formatPercent = (value: number): string => `${Math.round(value * 100)}%`;
 
+function InfoTooltip({ label, text }: { label: string; text: string }) {
+  return (
+    <button type="button" className="effects-info" aria-label={label}>
+      <svg
+        className="effects-info-icon"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          fillRule="evenodd"
+          d="M10 2a8 8 0 100 16 8 8 0 000-16zm.75 4.75a.75.75 0 10-1.5 0v.5a.75.75 0 001.5 0v-.5zm0 3.5a.75.75 0 00-1.5 0v3a.75.75 0 001.5 0v-3z"
+          clipRule="evenodd"
+        />
+      </svg>
+      <span className="effects-tooltip">{text}</span>
+    </button>
+  );
+}
+
 export default function Home() {
   const [form, setForm] = useState<PredictionRequest>(initialForm);
   const [ffrInput, setFfrInput] = useState<string>("0.83");
@@ -204,7 +224,15 @@ export default function Home() {
         <form className="form-panel" onSubmit={handleSubmit}>
 
           <div className="form-section">
-            <div className="section-label">Patient Profile</div>
+            <div className="section-label">
+              <span className="section-label-main">
+                Patient Profile
+                <InfoTooltip
+                  label="About Patient Profile"
+                  text="Patient Profile includes basic personal and body measures, such as age, sex, and BMI. These values provide the model with overall background risk context."
+                />
+              </span>
+            </div>
             <div className="form-grid">
               <label className="field">
                 <span className="field-label">Gender</span>
@@ -236,7 +264,15 @@ export default function Home() {
           </div>
 
           <div className="form-section">
-            <div className="section-label">Cardiac Function</div>
+            <div className="section-label">
+              <span className="section-label-main">
+                Cardiac Function
+                <InfoTooltip
+                  label="About Cardiac Function"
+                  text="Cardiac Function covers heart-related clinical measurements, including LVEF, SYNTAX score, cholesterol, and FFR. These describe how the heart is functioning and the severity of disease."
+                />
+              </span>
+            </div>
             <div className="form-grid">
               <label className="field">
                 <span className="field-label">Angina Class</span>
@@ -292,7 +328,15 @@ export default function Home() {
           </div>
 
           <div className="form-section">
-            <div className="section-label">Comorbidities</div>
+            <div className="section-label">
+              <span className="section-label-main">
+                Comorbidities
+                <InfoTooltip
+                  label="About Comorbidities"
+                  text="Comorbidities are other health conditions, such as diabetes or hypertension, that can increase or decrease cardiovascular risk."
+                />
+              </span>
+            </div>
             <div className="toggle-grid">
               {COMORBIDITIES.map(({ key, label }) => (
                 <label key={key} className="toggle-label">
@@ -309,7 +353,15 @@ export default function Home() {
           </div>
 
           <div className="form-section">
-            <div className="section-label">Imaging</div>
+            <div className="section-label">
+              <span className="section-label-main">
+                Imaging
+                <InfoTooltip
+                  label="About Imaging"
+                  text="Imaging includes plaque and vessel measurements from scans, for example plaque volume, lumen area, and plaque stability. These reflect structural disease features."
+                />
+              </span>
+            </div>
             <div className="form-grid">
               <label className="field">
                 <span className="field-label">Plaque Volume (%)</span>
@@ -352,7 +404,15 @@ export default function Home() {
 
         {/* ── Result ── */}
         <div className="result-panel">
-          <div className="result-heading">Adverse Outcome</div>
+          <div className="result-heading">
+            <span className="result-heading-main">
+              Adverse Outcome
+              <InfoTooltip
+                label="About Adverse Outcome"
+                text="Adverse Outcome is the predicted chance of a serious cardiovascular event. The model combines all entered factors into one risk estimate."
+              />
+            </span>
+          </div>
 
           {result ? (
             <>
@@ -379,32 +439,10 @@ export default function Home() {
                 <div className="explanation-head">
                   <span className="explanation-head-main">
                     Feature Effects
-                    <button
-                      type="button"
-                      className="effects-info"
-                      aria-label="How to read Feature Effects"
-                    >
-                      <svg
-                        className="effects-info-icon"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 2a8 8 0 100 16 8 8 0 000-16zm.75 4.75a.75.75 0 10-1.5 0v.5a.75.75 0 001.5 0v-.5zm0 3.5a.75.75 0 00-1.5 0v3a.75.75 0 001.5 0v-3z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <span className="effects-tooltip">
-                        Baseline is the model&apos;s starting risk for a typical patient
-                        profile. It is calculated from the baseline reference values in
-                        the training data (for example, median values for numeric
-                        features). Each bar then shows how one feature moves risk up
-                        (red) or down (green) from that starting point. Example:
-                        baseline 22% with -2.7% gives about 19.3%.
-                      </span>
-                    </button>
+                    <InfoTooltip
+                      label="How to read Feature Effects"
+                      text="Baseline is the model's starting risk for a typical patient profile, built from reference values in the training data (for example, median numeric values). Each bar shows how one feature moves risk up (red) or down (green) from that baseline. Example: baseline 22% with -2.7% gives about 19.3%."
+                    />
                   </span>
                 </div>
 
