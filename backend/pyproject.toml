@@ -5,7 +5,7 @@ description = "Association of Clinical Factors and Plaque Morphology with Advers
 authors = [
     { name = "Viacheslav" }
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.13,<3.14"
 dependencies = [
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.34.0",
