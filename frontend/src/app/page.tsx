@@ -104,7 +104,9 @@ const formatFeatureValue = (value: SerializedValue): string => {
 };
 
 const formatEffect = (effect: number): string =>
-  `${effect >= 0 ? "+" : "-"}${Math.abs(effect * 100).toFixed(1)} pp`;
+  `${effect >= 0 ? "+" : "-"}${Math.abs(effect * 100).toFixed(1)}%`;
+
+const formatPercent = (value: number): string => `${Math.round(value * 100)}%`;
 
 export default function Home() {
   const [form, setForm] = useState<PredictionRequest>(initialForm);
@@ -147,7 +149,50 @@ export default function Home() {
           "var(--low)",
       } as React.CSSProperties)
     : undefined;
-  const topEffects = result?.explanation.feature_effects.slice(0, 8) ?? [];
+  const waterfall = (() => {
+    if (!result) return null;
+
+    const baseline = result.explanation.baseline_probability;
+    const target = result.adverse_outcome.probability;
+    const selected = [...result.explanation.feature_effects.slice(0, 6)];
+    const selectedTotal = selected.reduce((sum, effect) => sum + effect.effect, 0);
+    const residual = target - baseline - selectedTotal;
+
+    if (Math.abs(residual) > 0.0001) {
+      selected.push({
+        feature: "other_factors",
+        effect: residual,
+        direction: residual > 0 ? "increase" : residual < 0 ? "decrease" : "neutral",
+        patient_value: null,
+        reference_value: null,
+      });
+    }
+
+    let running = baseline;
+    const segments = selected.map((effect, index) => {
+      const start = running;
+      const end = running + effect.effect;
+      running = end;
+      return { ...effect, key: `${effect.feature}-${index}`, start, end };
+    });
+
+    const bounds = [baseline, target, ...segments.flatMap(({ start, end }) => [start, end])];
+    const min = Math.min(...bounds);
+    const max = Math.max(...bounds);
+    const span = Math.max(max - min, 0.001);
+
+    return {
+      baseline,
+      target,
+      baselinePos: ((baseline - min) / span) * 100,
+      finalPos: ((target - min) / span) * 100,
+      segments: segments.map((segment) => {
+        const left = ((Math.min(segment.start, segment.end) - min) / span) * 100;
+        const width = Math.max((Math.abs(segment.end - segment.start) / span) * 100, 1.2);
+        return { ...segment, left, width };
+      }),
+    };
+  })();
 
   return (
     <main className="page-shell">
@@ -338,35 +383,63 @@ export default function Home() {
               <section className="explanation-block">
                 <div className="explanation-head">
                   <span>Feature Effects</span>
-                  <span>
-                    Baseline {Math.round(result.explanation.baseline_probability * 100)}%
-                  </span>
+                  <span>{formatPercent(result.adverse_outcome.probability)} risk</span>
                 </div>
 
-                <ul className="effects-list">
-                  {topEffects.map((effect) => (
-                    <li key={effect.feature} className="effect-item">
-                      <div className="effect-line">
-                        <span className="effect-name">
-                          {humanizeFeature(effect.feature)}
-                        </span>
-                        <span
-                          className={`effect-delta effect-${effect.direction}`}
-                          title="Change in risk if this feature is replaced with baseline."
-                        >
-                          {formatEffect(effect.effect)}
-                        </span>
-                      </div>
-                      <div className="effect-context">
-                        patient {formatFeatureValue(effect.patient_value)} ·
-                        baseline {formatFeatureValue(effect.reference_value)}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                {waterfall && (
+                  <>
+                    <div className="waterfall-summary">
+                      <span>Baseline {formatPercent(waterfall.baseline)}</span>
+                      <span>Final {formatPercent(waterfall.target)}</span>
+                    </div>
+
+                    <ul className="waterfall-list">
+                      {waterfall.segments.map((segment) => (
+                        <li key={segment.key} className="waterfall-row">
+                          <div className="waterfall-meta">
+                            <span className="waterfall-name">
+                              {humanizeFeature(segment.feature)}
+                            </span>
+                            <span
+                              className={`waterfall-delta waterfall-delta-${segment.direction}`}
+                            >
+                              {formatEffect(segment.effect)}
+                            </span>
+                          </div>
+
+                          <div className="waterfall-track">
+                            <span
+                              className="waterfall-marker waterfall-marker-base"
+                              style={{ left: `${waterfall.baselinePos}%` }}
+                            />
+                            <span
+                              className="waterfall-marker waterfall-marker-final"
+                              style={{ left: `${waterfall.finalPos}%` }}
+                            />
+                            <span
+                              className={`waterfall-bar waterfall-${segment.direction}`}
+                              style={{
+                                left: `${segment.left}%`,
+                                width: `${segment.width}%`,
+                              }}
+                            />
+                          </div>
+
+                          {segment.feature !== "other_factors" && (
+                            <div className="waterfall-values">
+                              patient {formatFeatureValue(segment.patient_value)} ·
+                              baseline {formatFeatureValue(segment.reference_value)}
+                            </div>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
 
                 <p className="effects-note">
-                  Delta in predicted risk when one feature is swapped with baseline.
+                  Waterfall view: baseline risk adjusted by per-feature deltas (absolute
+                  risk change, not relative percent).
                 </p>
               </section>
             </>

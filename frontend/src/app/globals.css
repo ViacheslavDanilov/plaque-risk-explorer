@@ -430,47 +430,100 @@ select:focus {
   color: var(--muted);
 }
 
-.effects-list {
+.waterfall-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.waterfall-list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
-.effect-item {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 12px;
+.waterfall-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
-.effect-line {
+.waterfall-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
 
-.effect-name {
+.waterfall-name {
   font-size: 11px;
   letter-spacing: 0.03em;
   color: var(--text);
 }
 
-.effect-delta {
+.waterfall-delta {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
 }
 
-.effect-increase { color: var(--high); }
-.effect-decrease { color: var(--low); }
-.effect-neutral  { color: var(--muted); }
+.waterfall-delta-increase { color: var(--high); }
+.waterfall-delta-decrease { color: var(--low); }
+.waterfall-delta-neutral  { color: var(--muted); }
 
-.effect-context {
-  margin-top: 5px;
+.waterfall-track {
+  position: relative;
+  height: 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.waterfall-marker {
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  width: 1px;
+  transform: translateX(-0.5px);
+}
+
+.waterfall-marker-base {
+  background: rgba(189, 212, 228, 0.45);
+}
+
+.waterfall-marker-final {
+  background: rgba(0, 228, 170, 0.55);
+}
+
+.waterfall-bar {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  border-radius: 999px;
+}
+
+.waterfall-increase {
+  background: rgba(240, 65, 85, 0.86);
+}
+
+.waterfall-decrease {
+  background: rgba(0, 228, 170, 0.86);
+}
+
+.waterfall-neutral {
+  background: rgba(61, 98, 120, 0.7);
+}
+
+.waterfall-values {
   font-size: 10px;
   color: var(--muted);
   letter-spacing: 0.02em;
