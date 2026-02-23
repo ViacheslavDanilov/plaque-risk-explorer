@@ -61,7 +61,7 @@ class PredictionRequest(BaseModel):
     hypertension: bool = True
     cholesterol_level: float = Field(5.2, ge=2.0, le=12.0)
     bmi: float = Field(28.0, ge=15.0, le=60.0)
-    lvef_percent: float = Field(51.0, ge=20.0, le=80.0)
+    lvef_percent: float = Field(51.0, ge=20.0, le=95.0)
     syntax_score: float = Field(18.0, ge=0.0, le=60.0)
     ffr: float | None = Field(default=0.83, ge=0.4, le=1.0)
     # Imaging features

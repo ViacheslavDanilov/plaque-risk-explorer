@@ -150,10 +150,27 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      if (!response.ok) throw new Error();
+      if (!response.ok) {
+        if (response.status === 422) {
+          const payload = (await response.json().catch(() => null)) as
+            | { detail?: Array<{ loc?: string[]; msg?: string }> | string }
+            | null;
+          if (Array.isArray(payload?.detail) && payload.detail.length > 0) {
+            const first = payload.detail[0];
+            const field = first.loc?.[first.loc.length - 1];
+            const prefix = field ? `${humanizeFeature(field)}: ` : "";
+            throw new Error(`${prefix}${first.msg ?? "invalid value"}`);
+          }
+          if (typeof payload?.detail === "string") {
+            throw new Error(payload.detail);
+          }
+          throw new Error("Invalid input values.");
+        }
+        throw new Error("Prediction request failed.");
+      }
       setResult((await response.json()) as PredictionResponse);
-    } catch {
-      setError("Prediction request failed. Verify backend is running.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Prediction request failed.");
     } finally {
       setIsLoading(false);
     }
@@ -255,7 +272,7 @@ export default function Home() {
               <label className="field">
                 <span className="field-label">BMI</span>
                 <input
-                  type="number" step="0.1"
+                  type="number" min={15} max={60} step="0.1"
                   value={form.bmi}
                   onChange={(e) => updateField("bmi", Number(e.currentTarget.value))}
                 />
@@ -291,7 +308,7 @@ export default function Home() {
               <label className="field">
                 <span className="field-label">LVEF (%)</span>
                 <input
-                  type="number" step="0.1"
+                  type="number" min={20} max={95} step="0.1"
                   value={form.lvef_percent}
                   onChange={(e) => updateField("lvef_percent", Number(e.currentTarget.value))}
                 />
@@ -299,7 +316,7 @@ export default function Home() {
               <label className="field">
                 <span className="field-label">SYNTAX Score</span>
                 <input
-                  type="number" step="0.1"
+                  type="number" min={0} max={60} step="0.1"
                   value={form.syntax_score}
                   onChange={(e) => updateField("syntax_score", Number(e.currentTarget.value))}
                 />
@@ -307,7 +324,7 @@ export default function Home() {
               <label className="field">
                 <span className="field-label">Cholesterol (mmol/L)</span>
                 <input
-                  type="number" step="0.01"
+                  type="number" min={2} max={12} step="0.01"
                   value={form.cholesterol_level}
                   onChange={(e) => updateField("cholesterol_level", Number(e.currentTarget.value))}
                 />
