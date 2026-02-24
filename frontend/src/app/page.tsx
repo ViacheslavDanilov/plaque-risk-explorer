@@ -530,17 +530,17 @@ export default function Home() {
       </div>
 
       {result && (
-        <section className={`summary-panel summary-${tier}`}>
+        <section className="summary-panel">
           <div className="summary-card-head">
             <span className="summary-card-title">
               Executive Summary
               <InfoTooltip
                 label="About Executive Summary"
-                text="This section combines patient inputs, model probability, and feature effects into a fixed summary format generated with Gemini when configured."
+                text="A structured summary of the patient's risk profile, key risk drivers, protective factors, and suggested care focus areas."
               />
             </span>
             <span className={`summary-source summary-source-${result.executive_summary.source}`}>
-              {result.executive_summary.source === "gemini" ? "Gemini" : "Fallback"}
+              {result.executive_summary.source === "gemini" ? "AI" : "Fallback"}
             </span>
           </div>
 
