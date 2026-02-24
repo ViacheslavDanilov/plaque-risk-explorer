@@ -505,18 +505,25 @@ select:focus {
 /* ── Explanation ────────────────────────────── */
 .explanation-block {
   padding-top: 4px;
-  border-top: 1px solid var(--border);
 }
 
 .explanation-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: flex-start;
-  margin-bottom: 10px;
   font-size: 10px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--accent);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.explanation-head::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  align-self: center;
 }
 
 .explanation-head-main {
