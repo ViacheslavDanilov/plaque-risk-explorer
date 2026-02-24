@@ -91,7 +91,7 @@ h1 {
   display: grid;
   grid-template-columns: 1fr 420px;
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
 }
 
 /* ── Form panel ─────────────────────────────── */
@@ -354,7 +354,8 @@ select:focus {
 .gauge-wrap {
   display: flex;
   justify-content: center;
-  margin-bottom: 28px;
+  align-items: center;
+  flex: 1;
 }
 
 .gauge-ring {
