@@ -280,12 +280,12 @@ select:focus {
 }
 
 .run-btn:hover {
-  transform: translateY(-1px);
+  transform: scale(0.995);
   box-shadow: 0 0 28px var(--accent-glow);
 }
 
 .run-btn:active {
-  transform: translateY(0);
+  transform: scale(0.99);
 }
 
 .run-btn:disabled {
