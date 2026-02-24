@@ -460,51 +460,6 @@ export default function Home() {
                 </div>
               </div>
 
-              <section className={`summary-card summary-${tier}`}>
-                <div className="summary-card-head">
-                  <span className="summary-card-title">
-                    Executive Summary
-                    <InfoTooltip
-                      label="About Executive Summary"
-                      text="This section combines patient inputs, model probability, and feature effects into a fixed summary format generated with Gemini when configured."
-                    />
-                  </span>
-                  <span className={`summary-source summary-source-${result.executive_summary.source}`}>
-                    {result.executive_summary.source === "gemini" ? "Gemini" : "Fallback"}
-                  </span>
-                </div>
-
-                <p className="summary-headline">{result.executive_summary.headline}</p>
-                <p className="summary-text">{result.executive_summary.clinical_summary}</p>
-
-                <div className="summary-group">
-                  <h3>Risk Drivers</h3>
-                  <ul>
-                    {result.executive_summary.risk_drivers.map((item, index) => (
-                      <li key={`${item}-${index}`}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="summary-group">
-                  <h3>Protective Signals</h3>
-                  <ul>
-                    {result.executive_summary.protective_signals.map((item, index) => (
-                      <li key={`${item}-${index}`}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="summary-group">
-                  <h3>Care Focus</h3>
-                  <ul>
-                    {result.executive_summary.care_focus.map((item, index) => (
-                      <li key={`${item}-${index}`}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              </section>
-
               <section className="explanation-block">
                 <div className="explanation-head">
                   <span className="explanation-head-main">
@@ -573,6 +528,55 @@ export default function Home() {
           )}
         </div>
       </div>
+
+      {result && (
+        <section className={`summary-panel summary-${tier}`}>
+          <div className="summary-card-head">
+            <span className="summary-card-title">
+              Executive Summary
+              <InfoTooltip
+                label="About Executive Summary"
+                text="This section combines patient inputs, model probability, and feature effects into a fixed summary format generated with Gemini when configured."
+              />
+            </span>
+            <span className={`summary-source summary-source-${result.executive_summary.source}`}>
+              {result.executive_summary.source === "gemini" ? "Gemini" : "Fallback"}
+            </span>
+          </div>
+
+          <p className="summary-headline">{result.executive_summary.headline}</p>
+          <p className="summary-text">{result.executive_summary.clinical_summary}</p>
+
+          <div className="summary-columns">
+            <div className="summary-group">
+              <h3>Risk Drivers</h3>
+              <ul>
+                {result.executive_summary.risk_drivers.map((item, index) => (
+                  <li key={`${item}-${index}`}>{item}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="summary-group">
+              <h3>Protective Signals</h3>
+              <ul>
+                {result.executive_summary.protective_signals.map((item, index) => (
+                  <li key={`${item}-${index}`}>{item}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="summary-group">
+              <h3>Care Focus</h3>
+              <ul>
+                {result.executive_summary.care_focus.map((item, index) => (
+                  <li key={`${item}-${index}`}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      )}
 
       {error && <div className="error-bar">{error}</div>}
     </main>
