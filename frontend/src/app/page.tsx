@@ -28,6 +28,17 @@ type BinaryTargetPrediction = {
   risk_tier: RiskTier;
 };
 
+type SummarySource = "gemini" | "fallback";
+
+type ExecutiveSummary = {
+  headline: string;
+  clinical_summary: string;
+  risk_drivers: string[];
+  protective_signals: string[];
+  care_focus: string[];
+  source: SummarySource;
+};
+
 type SerializedValue = string | number | boolean | null;
 
 type FeatureEffect = {
@@ -46,7 +57,7 @@ type Explainability = {
 
 type PredictionResponse = {
   adverse_outcome: BinaryTargetPrediction;
-  recommendations: string[];
+  executive_summary: ExecutiveSummary;
   explanation: Explainability;
 };
 
@@ -449,11 +460,50 @@ export default function Home() {
                 </div>
               </div>
 
-              <ul className={`recs recs-${tier}`}>
-                {result.recommendations.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
+              <section className={`summary-card summary-${tier}`}>
+                <div className="summary-card-head">
+                  <span className="summary-card-title">
+                    Executive Summary
+                    <InfoTooltip
+                      label="About Executive Summary"
+                      text="This section combines patient inputs, model probability, and feature effects into a fixed summary format generated with Gemini when configured."
+                    />
+                  </span>
+                  <span className={`summary-source summary-source-${result.executive_summary.source}`}>
+                    {result.executive_summary.source === "gemini" ? "Gemini" : "Fallback"}
+                  </span>
+                </div>
+
+                <p className="summary-headline">{result.executive_summary.headline}</p>
+                <p className="summary-text">{result.executive_summary.clinical_summary}</p>
+
+                <div className="summary-group">
+                  <h3>Risk Drivers</h3>
+                  <ul>
+                    {result.executive_summary.risk_drivers.map((item, index) => (
+                      <li key={`${item}-${index}`}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="summary-group">
+                  <h3>Protective Signals</h3>
+                  <ul>
+                    {result.executive_summary.protective_signals.map((item, index) => (
+                      <li key={`${item}-${index}`}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="summary-group">
+                  <h3>Care Focus</h3>
+                  <ul>
+                    {result.executive_summary.care_focus.map((item, index) => (
+                      <li key={`${item}-${index}`}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </section>
 
               <section className="explanation-block">
                 <div className="explanation-head">

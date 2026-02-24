@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from ml.inference import load_predictor, predict
+from plaque_risk_explorer.executive_summary import generate_executive_summary
 
 _BACKEND_ROOT = Path(__file__).resolve().parents[2]
 _MODEL_DIR = Path(os.getenv("MODEL_DIR", str(_BACKEND_ROOT / "models")))
@@ -76,9 +77,18 @@ class BinaryTargetPrediction(BaseModel):
     risk_tier: Literal["low", "moderate", "high"]
 
 
+class ExecutiveSummary(BaseModel):
+    headline: str
+    clinical_summary: str
+    risk_drivers: list[str]
+    protective_signals: list[str]
+    care_focus: list[str]
+    source: Literal["gemini", "fallback"]
+
+
 class PredictionResponse(BaseModel):
     adverse_outcome: BinaryTargetPrediction
-    recommendations: list[str]
+    executive_summary: ExecutiveSummary
     explanation: dict[str, object]
 
 
@@ -88,26 +98,6 @@ def _risk_tier(probability: float) -> Literal["low", "moderate", "high"]:
     if probability >= 0.35:
         return "moderate"
     return "low"
-
-
-def _recommendations(tier: Literal["low", "moderate", "high"]) -> list[str]:
-    if tier == "high":
-        return [
-            "Discuss close cardiology follow-up within 2-4 weeks.",
-            "Prioritize lipid, blood pressure, and glycemic optimization.",
-            "Review indications for additional imaging or invasive reassessment.",
-        ]
-    if tier == "moderate":
-        return [
-            "Schedule structured outpatient follow-up.",
-            "Optimize modifiable risk factors and medication adherence.",
-            "Repeat clinical reassessment in 6-8 weeks.",
-        ]
-    return [
-        "Continue preventive therapy and risk-factor control.",
-        "Maintain routine follow-up and symptom monitoring.",
-        "Escalate evaluation if symptoms worsen.",
-    ]
 
 
 @app.get("/health")
@@ -129,12 +119,19 @@ async def predict_adverse_outcome(payload: PredictionRequest):
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     tier = _risk_tier(probability)
+    executive_summary = generate_executive_summary(
+        patient_features=payload.model_dump(),
+        probability=probability,
+        risk_tier=tier,
+        explanation=explanation,
+    )
+
     return PredictionResponse(
         adverse_outcome=BinaryTargetPrediction(
             probability=probability,
             prediction=prediction,
             risk_tier=tier,
         ),
-        recommendations=_recommendations(tier),
+        executive_summary=executive_summary,
         explanation=explanation,
     )
