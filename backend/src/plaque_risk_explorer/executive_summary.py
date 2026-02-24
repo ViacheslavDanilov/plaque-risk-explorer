@@ -35,7 +35,7 @@ LOGGER = logging.getLogger(__name__)
 _GEMINI_API_URL_TEMPLATE = (
     "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 )
-_DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
+_DEFAULT_GEMINI_MODEL = "gemini-3-flash-preview"
 
 _FEATURE_LABELS = {
     "gender": "Gender",
@@ -527,7 +527,7 @@ def generate_executive_summary(
         or _DEFAULT_GEMINI_MODEL
     )
     temperature = _safe_float(os.getenv("GEMINI_TEMPERATURE", "0.2"), 0.2)
-    timeout_seconds = _safe_float(os.getenv("GEMINI_TIMEOUT_SECONDS", "12"), 12.0)
+    timeout_seconds = _safe_float(os.getenv("GEMINI_TIMEOUT_SECONDS", "30"), 30.0)
 
     prompt = _build_prompt(
         patient_features,
