@@ -141,6 +141,23 @@ plaque-risk-explorer/
     cd ..
     ```
 
+### Environment Variables
+
+Copy the example and fill in your API key:
+```bash
+cp backend/.env.example backend/.env
+```
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `GEMINI_API_KEY` | Yes | — | Google Gemini API key for executive summaries |
+| `GEMINI_MODEL` | No | `gemini-3-flash-preview` | Gemini model ID |
+| `GEMINI_TEMPERATURE` | No | `0.2` | Generation temperature |
+| `GEMINI_TIMEOUT_SECONDS` | No | `30` | Request timeout in seconds |
+| `NEXT_PUBLIC_API_BASE_URL` | No | `http://localhost:8000` | Backend URL for the frontend |
+
+If `GEMINI_API_KEY` is missing or the API call fails, the app falls back to a template-based summary.
+
 ### Running the Application
 
 **Backend (FastAPI):**
