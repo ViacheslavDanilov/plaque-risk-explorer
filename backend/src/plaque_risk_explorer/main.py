@@ -3,12 +3,15 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Literal
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from ml.inference import load_predictor, predict
 from plaque_risk_explorer.executive_summary import generate_executive_summary
+
+load_dotenv()
 
 _BACKEND_ROOT = Path(__file__).resolve().parents[2]
 _MODEL_DIR = Path(os.getenv("MODEL_DIR", str(_BACKEND_ROOT / "models")))

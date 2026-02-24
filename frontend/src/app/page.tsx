@@ -540,7 +540,7 @@ export default function Home() {
               />
             </span>
             <span className={`summary-source summary-source-${result.executive_summary.source}`}>
-              {result.executive_summary.source === "gemini" ? "AI" : "Fallback"}
+              {result.executive_summary.source === "gemini" ? "Gemini" : "Fallback"}
             </span>
           </div>
 

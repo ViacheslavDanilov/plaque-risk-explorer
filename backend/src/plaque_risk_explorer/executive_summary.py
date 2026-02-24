@@ -35,7 +35,7 @@ LOGGER = logging.getLogger(__name__)
 _GEMINI_API_URL_TEMPLATE = (
     "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 )
-_DEFAULT_GEMINI_MODEL = "gemini-3-flash"
+_DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
 
 _FEATURE_LABELS = {
     "gender": "Gender",
