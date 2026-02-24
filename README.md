@@ -10,7 +10,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
 [![pandas](https://img.shields.io/badge/pandas-3.0-150458.svg?logo=pandas&logoColor=white)](https://pandas.pydata.org/)
 
-**Identifying predictors of adverse cardiovascular outcomes using AutoGluon, SHAP explainability, and LLM-powered clinical summaries.**
+**Identifying predictors of adverse cardiovascular outcomes using AutoGluon, local counterfactual explainability, and LLM-powered clinical summaries.**
 
 🔗 **Live Demo**: https://plaque-risk-explorer.vercel.app/
 
@@ -18,13 +18,13 @@
 
 ## 📋 Overview
 
-This project is a research-focused prototype designed to identify predictors of adverse cardiovascular outcomes using clinical, morphological, and procedural patient data. The system uses AutoGluon for automated model selection with SHAP-based explainability, providing both accurate predictions and interpretable insights. An LLM-powered module generates concise executive summaries for individual patient risk assessments.
+This project is a research-focused prototype designed to identify predictors of adverse cardiovascular outcomes using clinical, morphological, and procedural patient data. The system uses AutoGluon for automated model selection with local counterfactual feature-effect explainability, providing both accurate predictions and interpretable insights. An LLM-powered module generates concise executive summaries for individual patient risk assessments.
 
 ## 🎯 Problem Statement
 
 Cardiac patients undergoing coronary interventions face risks of adverse outcomes including death, myocardial infarction, stroke, and need for repeat procedures. The goal is to:
 
-1. **Identify Key Predictors**: Determine which clinical and morphological factors are most predictive of adverse outcomes using SHAP-based feature importance
+1. **Identify Key Predictors**: Determine which clinical and morphological factors are most predictive of adverse outcomes using local feature-effect attribution
 2. **Risk Stratification**: Provide individual patient risk probability with interpretable factor contributions
 3. **Clinical Decision Support**: Generate LLM-powered executive summaries with risk interpretation and actionable recommendations
 
@@ -38,7 +38,7 @@ plaque-risk-explorer/
 │   │   │   └── main.py             # API endpoints
 │   │   ├── ml/                     # ML modules
 │   │   │   ├── evaluation/         # Metrics & evaluation logic
-│   │   │   ├── inference/          # Prediction & SHAP inference
+│   │   │   ├── inference/          # Prediction & explainability inference
 │   │   │   ├── preprocessing/      # Feature engineering
 │   │   │   └── training/           # Model training
 │   │   └── scripts/                # Entry-point scripts
@@ -52,7 +52,7 @@ plaque-risk-explorer/
 │   ├── models/                     # Trained ML model artifacts
 │   ├── reports/                    # Generated analysis reports
 │   │   ├── eda.md                  # Exploratory data analysis report
-│   │   └── model_performance.md    # Model evaluation & SHAP report
+│   │   └── model_performance.md    # Model evaluation & explainability report
 │   └── pyproject.toml              # Backend dependencies
 │
 ├── frontend/                       # ⚛️ Next.js Frontend
@@ -98,7 +98,7 @@ plaque-risk-explorer/
 - **Pydantic** - Data validation
 - **pandas** - Data manipulation and analysis
 - **AutoGluon** - Automated ML with model selection and ensembling
-- **SHAP** - Model explainability and feature importance
+- **Counterfactual Attribution** - Local per-feature explainability for individual predictions
 - **LLM API** - Configurable provider (OpenAI, Anthropic, etc.) for executive summaries
 
 ### Frontend
@@ -140,6 +140,23 @@ plaque-risk-explorer/
     pnpm install
     cd ..
     ```
+
+### Environment Variables
+
+Copy the example and fill in your API key:
+```bash
+cp backend/.env.example backend/.env
+```
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `GEMINI_API_KEY` | Yes | — | Google Gemini API key for executive summaries |
+| `GEMINI_MODEL` | No | `gemini-3-flash-preview` | Gemini model ID |
+| `GEMINI_TEMPERATURE` | No | `0` | Generation temperature |
+| `GEMINI_TIMEOUT_SECONDS` | No | `45` | Request timeout in seconds |
+| `NEXT_PUBLIC_API_BASE_URL` | No | `http://localhost:8000` | Backend URL for the frontend |
+
+If `GEMINI_API_KEY` is missing or the API call fails, the app falls back to a template-based summary.
 
 ### Running the Application
 

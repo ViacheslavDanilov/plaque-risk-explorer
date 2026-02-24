@@ -5,13 +5,15 @@ description = "Association of Clinical Factors and Plaque Morphology with Advers
 authors = [
     { name = "Viacheslav" }
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.13,<3.14"
 dependencies = [
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.34.0",
     "pydantic>=2.10.0",
     "pandas>=2.2.0",
     "numpy>=2.0.0",
+    "autogluon>=1.5.0",
+    "python-dotenv>=1.2.1",
 ]
 
 [dependency-groups]
@@ -28,7 +30,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/ml", "src/scripts", "src/plaque_risk_explorer"]
+packages = ["src/ml", "src/pipelines", "src/plaque_risk_explorer"]
 
 [tool.mypy]
 python_version = "3.13"
@@ -57,4 +59,4 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["plaque_risk_explorer", "ml", "scripts"]
+known-first-party = ["plaque_risk_explorer", "ml", "pipelines"]
