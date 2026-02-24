@@ -143,6 +143,7 @@ export default function Home() {
   const [form, setForm] = useState<PredictionRequest>(initialForm);
   const [ffrInput, setFfrInput] = useState<string>("0.83");
   const [result, setResult] = useState<PredictionResponse | null>(null);
+  const [lastSubmitted, setLastSubmitted] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -153,6 +154,8 @@ export default function Home() {
 
   const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const formJson = JSON.stringify(form);
+    if (result && formJson === lastSubmitted) return;
     setIsLoading(true);
     setError(null);
     try {
@@ -180,6 +183,7 @@ export default function Home() {
         throw new Error("Prediction request failed.");
       }
       setResult((await response.json()) as PredictionResponse);
+      setLastSubmitted(formJson);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Prediction request failed.");
     } finally {
