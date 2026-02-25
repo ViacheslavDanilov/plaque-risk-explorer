@@ -326,7 +326,7 @@ export default function Home() {
               <label className="field">
                 <span className="field-label">LVEF (%)</span>
                 <input
-                  type="number" min={20} max={95} step="0.1"
+                  type="number" min={20} max={95} step="1"
                   value={form.lvef_percent}
                   onChange={(e) => updateField("lvef_percent", Number(e.currentTarget.value))}
                 />
@@ -334,7 +334,7 @@ export default function Home() {
               <label className="field">
                 <span className="field-label">SYNTAX Score</span>
                 <input
-                  type="number" min={0} max={60} step="0.1"
+                  type="number" min={0} max={60} step="1"
                   value={form.syntax_score}
                   onChange={(e) => updateField("syntax_score", Number(e.currentTarget.value))}
                 />
@@ -342,7 +342,7 @@ export default function Home() {
               <label className="field">
                 <span className="field-label">Cholesterol (mmol/L)</span>
                 <input
-                  type="number" min={2} max={12} step="0.01"
+                  type="number" min={2} max={12} step="0.1"
                   value={form.cholesterol_level}
                   onChange={(e) => updateField("cholesterol_level", Number(e.currentTarget.value))}
                 />
