@@ -1,0 +1,112 @@
+# Synthetic Dataset Generation: Methodology and Rationale
+
+## Introduction
+
+The creation of synthetic datasets is a critical step in modern biomedical data analysis, especially when addressing class imbalance, limited sample sizes, or the need for robust model validation. In this project, synthetic data generation is employed to supplement and expand the original clinical and morphological dataset, enabling more reliable risk stratification and outcome prediction for cardiovascular events.
+
+## Data Sources and Structure
+### Numerical Characteristics and Data Statistics
+
+The original modeling dataset (`features.csv`) contains 56 samples and 15 features. The target variable is highly imbalanced:
+
+- **Original target distribution:**
+  - Class 0.0: 51 samples
+  - Class 1.0: 5 samples
+
+After applying SMOTENC with `sampling_strategy='auto'`, the synthetic dataset contains 102 samples (51 real + 51 synthetic), achieving perfect class balance:
+
+- **Resampled target distribution:**
+  - Class 0.0: 51 samples
+  - Class 1.0: 51 samples
+
+**Feature matrix shape:**
+  - Original: (56, 15)
+  - Resampled: (102, 15)
+
+**Sampling method used:**
+  - SMOTENC (categorical_features=[0], strategy='auto')
+
+**Export details:**
+  - Mode: new (only synthetic samples retained)
+  - File: `backend/data/resampled_data_smote.csv`
+  - Numerical values rounded to 2 decimal places
+
+**Log summary:**
+  - Data loaded from path: backend/data/features.csv
+  - Features and target extracted from data. Features shape: (56, 15), Target shape: (56,)
+  - SMOTENC initialized with categorical_features=[0] and sampling_strategy='auto'
+  - Original target distribution: {0.0: 51, 1.0: 5}
+  - Data resampled using smote-sampling. Resampled data shape: (102, 15), (102,). New target distribution: {0.0: 51, 1.0: 51}
+  - Sampler does not provide sample_indices_. Exporting all resampled data.
+  - Data exported to 'backend/data/resampled_data_smote.csv', mode=new, include_index=False
+  - Sampling process completed using method 'smote' with strategy 'auto'
+
+The original dataset consists of clinical and plaque morphology features collected from patients undergoing coronary assessment. Key features include demographic variables (e.g., age, gender), clinical history (e.g., diabetes, hypertension), and plaque characteristics (e.g., volume, stability, syntax score). The synthetic dataset is generated based on this structure, preserving feature relationships and statistical properties.
+
+## Synthetic Data Generation Logic
+
+### Sampling Modes
+
+Two principal modes of synthetic data generation are implemented:
+
+- **Append Mode**: Synthetic samples are generated to supplement the original data, resulting in a combined dataset containing both real and synthetic observations. This mode is useful for balancing classes or increasing sample size without excluding original data.
+
+- **New Mode**: Only synthetic samples are retained, with all original data excluded from the final dataset. This mode is particularly valuable for model validation, privacy-preserving analysis, or when the goal is to study the properties of purely synthetic populations.
+
+### Sampling Methods
+
+The following algorithms are used for synthetic data generation:
+
+- **RandomUnderSampler**: Reduces the majority class by randomly removing samples, achieving a balanced class distribution.
+- **RandomOverSampler**: Increases the minority class by randomly duplicating samples.
+- **SMOTE (Synthetic Minority Over-sampling Technique)**: Generates new synthetic samples by interpolating between existing minority class samples.
+- **SMOTENC**: Extends SMOTE to handle categorical features, interpolating only within continuous features while preserving categorical values.
+- **ADASYN**: Similar to SMOTE, but focuses on generating synthetic samples for minority class examples that are harder to learn.
+
+Each method can be selected based on the desired sampling strategy and the nature of the dataset.
+
+## Implementation Details
+
+The synthetic data generation process is encapsulated in the `DataSampling` class, which provides the following capabilities:
+
+- Flexible selection of sampling method and strategy.
+- Choice of sampling mode (`append` or `new`).
+- Export of synthetic datasets to CSV with configurable rounding for numerical features.
+- Visualization of class distributions before and after sampling.
+- Comparison plots for feature distributions between real and synthetic data.
+
+### Example Workflow
+
+1. **Initialization**: Load the original dataset and select target features.
+2. **Sampler Configuration**: Choose the sampling method and mode.
+3. **Resampling**: Apply the sampler to generate synthetic data.
+4. **Export**: Save the resulting dataset to CSV, with numerical values rounded to two decimal places.
+5. **Visualization**: Generate plots to illustrate class balance and feature distribution.
+
+## Visualization and Interpretation
+
+To facilitate interpretation, several plots are generated:
+
+- **Class Distribution Pie Charts**: Show the balance of target classes before and after sampling.
+  
+  *[Insert pie chart images here]*
+
+- **Feature Distribution Comparison**: Overlay histograms for selected features (e.g., age, cholesterol_level, syntax_score, angina_functional_class) comparing real and synthetic data.
+  
+  *[Insert comparison plot images here]*
+
+These visualizations help assess the fidelity of synthetic data and the impact of sampling strategies.
+
+## Customization and Extensibility
+
+- The list of features for comparison plots can be customized.
+- Sampling strategies can be tailored to specific research questions (e.g., balancing only certain classes).
+- The rounding precision for numerical features is configurable.
+
+## Conclusion
+
+Synthetic data generation, as implemented in this project, provides a robust framework for addressing class imbalance, augmenting limited datasets, and enabling privacy-preserving analysis. The flexible modes and methods allow researchers to tailor the process to their specific needs, with comprehensive visualization tools supporting transparent evaluation of synthetic data quality.
+
+---
+
+*For further details, refer to the code documentation and the generated plots. Replace the placeholders above with actual images for publication or reporting.*
