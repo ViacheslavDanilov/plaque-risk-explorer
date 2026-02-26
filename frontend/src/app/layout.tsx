@@ -23,7 +23,16 @@ const ibmPlexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: "Plaque Risk Explorer",
-  description: "Model-driven adverse cardiovascular outcome assessment.",
+  description: "Clinical decision support for cardiovascular risk stratification with explainable ML and AI.",
+  openGraph: {
+    title: "Plaque Risk Explorer",
+    description: "Clinical decision support for cardiovascular risk stratification with explainable ML and AI.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Plaque Risk Explorer",
+    description: "Clinical decision support for cardiovascular risk stratification with explainable ML and AI.",
+  },
 };
 
 export default function RootLayout({
