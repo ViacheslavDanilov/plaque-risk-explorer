@@ -2,6 +2,7 @@ import gc
 import torch
 import logging
 import numpy as np
+import datetime
 
 from sklearn.model_selection import train_test_split, LeaveOneOut, StratifiedKFold
 from sklearn.metrics import roc_auc_score, average_precision_score
@@ -30,11 +31,13 @@ if not logger.hasHandlers():
 
 class AdverseOutcomeModel:
     """Placeholder: class for loading and using the adverse outcome model."""
-    def __init__(self):
+    def __init__(self, model_name='REALTABPFN-V2.5'):
         self.tabpfnv2_predictor = None
         self.loo = LeaveOneOut()
         self.train_data = None
         self.test_data = None
+        self.model_name = model_name
+        self.model_path = f'backend/models/tabpfnv2_model/models/{self.model_name}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
 
     def predict(self, data):
         tabpfnv2_predictions = self.tabpfnv2_predictor.predict_proba(data)
@@ -57,18 +60,22 @@ class AdverseOutcomeModel:
         self.tabpfnv2_predictor = TabularPredictor(
             label=target_column,
             eval_metric="roc_auc",
-            path='backend/models/tabpfnv2_model'
+            path=self.model_path
         )
         self.tabpfnv2_predictor.fit(
             self.train_data,
             hyperparameters={
-                'REALTABPFN-V2.5': {},
+                self.model_name: {},
             },
             presets="best_quality",
         )
+        # After fit, the actual model directory is self.tabpfnv2_predictor.get_model_path()
         logger.info("Model training complete. Evaluating on test set...")
         leaderboard = self.tabpfnv2_predictor.leaderboard(self.test_data, silent=False)
         logger.info(f"Leaderboard:\n{leaderboard}")
+        leaderboard_path = f"{self.model_path}/leaderboard.xlsx"
+        leaderboard.to_excel(leaderboard_path, index=False)
+        logger.info(f"Leaderboard saved to: {leaderboard_path}")
 
 
     def bootstrap_validation(self, data, target_column: str, n_bootstrap: int = 300):
@@ -100,12 +107,13 @@ class AdverseOutcomeModel:
             self.tabpfnv2_predictor = TabularPredictor(
                 label=target_column,
                 eval_metric="log_loss",
-                verbosity=0
+                verbosity=0,
+                path=self.model_path
             )
 
             self.tabpfnv2_predictor.fit(
                 train_data=train_df,
-                hyperparameters={'REALTABPFN-V2.5': {}},
+                hyperparameters={self.model_name: {}},
                 num_bag_folds=0,
                 num_stack_levels=0,
             )
@@ -132,8 +140,8 @@ class AdverseOutcomeModel:
         optimism_pr = np.mean(np.array(apparent_pr) - np.array(test_pr))
 
         # apparent performance на всей выборке
-        self.tabpfnv2_predictor = TabularPredictor(label=target_column, verbosity=0)
-        self.tabpfnv2_predictor.fit(data, hyperparameters={'REALTABPFN-V2.5': {}})
+        self.tabpfnv2_predictor = TabularPredictor(label=target_column, verbosity=0, path=self.model_path)
+        self.tabpfnv2_predictor.fit(data, hyperparameters={self.model_name: {}})
 
         p_full = self.tabpfnv2_predictor.predict_proba(data).iloc[:, 1]
         auc_full = roc_auc_score(y, p_full)
@@ -141,6 +149,7 @@ class AdverseOutcomeModel:
 
         leaderboard = self.tabpfnv2_predictor.leaderboard(self.test_data, silent=False)
         logger.info(f"Leaderboard:\n{leaderboard}")
+        leaderboard.to_excel(f"{self.model_path}/leaderboard.xlsx", index=False)
 
         corrected_auc = auc_full - optimism_auc
         corrected_pr = pr_full - optimism_pr
@@ -171,7 +180,8 @@ class AdverseOutcomeModel:
             self.tabpfnv2_predictor = TabularPredictor(
                 label=target_column,
                 eval_metric="average_precision",
-                verbosity=0
+                verbosity=0,
+                path=self.model_path
             )
 
             self.tabpfnv2_predictor.fit(
@@ -193,6 +203,8 @@ class AdverseOutcomeModel:
         
         logger.info("StratifiedKFold finished")
         self.evaluate_loocv(true, preds)
+        leaderboard = self.tabpfnv2_predictor.leaderboard(self.test_data, silent=False)
+        leaderboard.to_excel(f"{self.model_path}/leaderboard.xlsx", index=False)
 
     
     def train_loocv(self, data, target_column: str):
@@ -210,12 +222,13 @@ class AdverseOutcomeModel:
             self.tabpfnv2_predictor = TabularPredictor(
                 label=target_column,
                 eval_metric="log_loss", # roc_auc
-                verbosity=0
+                verbosity=0,
+                path=self.model_path
             )
 
             self.tabpfnv2_predictor.fit(
                 TabularDataset(train_df),
-                hyperparameters={'REALTABPFN-V2.5': {}},
+                hyperparameters={self.model_name: {}},
                 ag_args_fit={"num_gpus": 0},
                 presets="best_quality"
             )
@@ -233,6 +246,8 @@ class AdverseOutcomeModel:
 
         logger.info("LOOCV finished")
         self.evaluate_loocv(true, preds)
+        leaderboard = self.tabpfnv2_predictor.leaderboard(self.test_data, silent=False)
+        leaderboard.to_excel(f"{self.model_path}/leaderboard.xlsx", index=False)
 
 
     def evaluate_loocv(self, true, preds):
@@ -265,8 +280,8 @@ if __name__ == "__main__":
     adverse_outcome_model = AdverseOutcomeModel()
     adverse_outcome_model.train_data = train_data
     adverse_outcome_model.test_data = test_data
-    adverse_outcome_model.train_stratified(train_data, target_column="target")
+    # adverse_outcome_model.train_stratified(train_data, target_column="target")
     # adverse_outcome_model.bootstrap_validation(data, target_column="adverse_outcome", n_bootstrap=300)
-    # adverse_outcome_model.bootstrap_validation(train_data, target_column="target", n_bootstrap=300)
+    adverse_outcome_model.bootstrap_validation(train_data, target_column="target", n_bootstrap=300)
 
     # # adverse_outcome_model.predict(adverse_outcome_model.test_data)
