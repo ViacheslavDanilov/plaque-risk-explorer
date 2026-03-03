@@ -153,6 +153,7 @@ export default function Home() {
   const [lastFingerprint, setLastFingerprint] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [elapsed, setElapsed] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
 
   const currentFingerprint = JSON.stringify(form);
@@ -209,6 +210,16 @@ export default function Home() {
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, []);
+
+  /* Elapsed timer while loading */
+  useEffect(() => {
+    if (!isLoading) return;
+    const start = Date.now();
+    const id = setInterval(() => {
+      setElapsed((Date.now() - start) / 1000);
+    }, 100);
+    return () => clearInterval(id);
+  }, [isLoading]);
 
   const updateField = <K extends keyof PredictionRequest>(
     key: K,
@@ -626,6 +637,7 @@ export default function Home() {
                 <>
                   <span className="spinner" />
                   Analyzing
+                  <span className="elapsed-time">{elapsed.toFixed(1)}s</span>
                 </>
               ) : (
                 "Run Analysis"

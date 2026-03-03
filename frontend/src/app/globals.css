@@ -432,6 +432,13 @@ select:focus {
   cursor: progress;
 }
 
+.elapsed-time {
+  opacity: 0.55;
+  font-variant-numeric: tabular-nums;
+  min-width: 3.5ch;
+  text-align: right;
+}
+
 .spinner {
   width: 13px;
   height: 13px;
