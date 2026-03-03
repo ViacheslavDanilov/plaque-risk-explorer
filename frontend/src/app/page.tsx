@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type RiskTier = "low" | "moderate" | "high";
 
@@ -83,11 +83,13 @@ const initialForm: PredictionRequest = {
   unstable_plaque: false,
 };
 
+const initialFingerprint = JSON.stringify(initialForm);
+
 const COMORBIDITIES: { key: keyof PredictionRequest; label: string }[] = [
-  { key: "diabetes_mellitus",            label: "Diabetes Mellitus" },
-  { key: "hypertension",                 label: "Hypertension" },
+  { key: "diabetes_mellitus", label: "Diabetes Mellitus" },
+  { key: "hypertension", label: "Hypertension" },
   { key: "post_infarction_cardiosclerosis", label: "Post-MI Cardiosclerosis" },
-  { key: "multifocal_atherosclerosis",   label: "Multifocal Atherosclerosis" },
+  { key: "multifocal_atherosclerosis", label: "Multifocal Atherosclerosis" },
 ];
 
 const humanizeFeature = (feature: string): string => {
@@ -97,7 +99,12 @@ const humanizeFeature = (feature: string): string => {
   return feature
     .split("_")
     .map((word) => {
-      if (word === "ffr" || word === "bmi" || word === "lvef" || word === "syntax") {
+      if (
+        word === "ffr" ||
+        word === "bmi" ||
+        word === "lvef" ||
+        word === "syntax"
+      ) {
         return word.toUpperCase();
       }
       return `${word.charAt(0).toUpperCase()}${word.slice(1)}`;
@@ -143,9 +150,76 @@ export default function Home() {
   const [form, setForm] = useState<PredictionRequest>(initialForm);
   const [ffrInput, setFfrInput] = useState<string>("0.83");
   const [result, setResult] = useState<PredictionResponse | null>(null);
-  const [lastSubmitted, setLastSubmitted] = useState<string | null>(null);
+  const [lastFingerprint, setLastFingerprint] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const currentFingerprint = JSON.stringify(form);
+  const submitDisabled =
+    isLoading ||
+    (lastFingerprint !== null && lastFingerprint === currentFingerprint);
+  const isModified = currentFingerprint !== initialFingerprint;
+
+  /* Scroll wheel adjusts number inputs without scrolling the page */
+  useEffect(() => {
+    const el = formRef.current;
+    if (!el) return;
+
+    const handler = (e: WheelEvent) => {
+      const input = (e.target as HTMLElement).closest(
+        'input[type="number"]',
+      ) as HTMLInputElement | null;
+      if (!input) return;
+      e.preventDefault();
+
+      const field = input.dataset.field as keyof PredictionRequest | undefined;
+      if (!field) return;
+
+      const step = parseFloat(input.step) || 1;
+      const min = input.min !== "" ? parseFloat(input.min) : -Infinity;
+      const max = input.max !== "" ? parseFloat(input.max) : Infinity;
+      const current = parseFloat(input.value) || 0;
+      const direction = e.deltaY < 0 ? 1 : -1;
+      const decimals = Math.max((input.step.split(".")[1] || "").length, 0);
+      const next = Math.min(
+        max,
+        Math.max(
+          min,
+          parseFloat((current + direction * step).toFixed(decimals)),
+        ),
+      );
+
+      setForm((prev) => ({ ...prev, [field]: next }));
+      if (field === "ffr") setFfrInput(String(next));
+    };
+
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => el.removeEventListener("wheel", handler);
+  }, []);
+
+  /* Ctrl/Cmd + Enter to submit from any field */
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        formRef.current?.requestSubmit();
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, []);
+
+  /* Elapsed timer while loading */
+  useEffect(() => {
+    if (!isLoading) return;
+    const start = Date.now();
+    const id = setInterval(() => {
+      setElapsed((Date.now() - start) / 1000);
+    }, 100);
+    return () => clearInterval(id);
+  }, [isLoading]);
 
   const updateField = <K extends keyof PredictionRequest>(
     key: K,
@@ -154,8 +228,7 @@ export default function Home() {
 
   const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formJson = JSON.stringify(form);
-    if (result && formJson === lastSubmitted) return;
+    if (submitDisabled) return;
     setIsLoading(true);
     setError(null);
     try {
@@ -166,9 +239,9 @@ export default function Home() {
       });
       if (!response.ok) {
         if (response.status === 422) {
-          const payload = (await response.json().catch(() => null)) as
-            | { detail?: Array<{ loc?: string[]; msg?: string }> | string }
-            | null;
+          const payload = (await response.json().catch(() => null)) as {
+            detail?: Array<{ loc?: string[]; msg?: string }> | string;
+          } | null;
           if (Array.isArray(payload?.detail) && payload.detail.length > 0) {
             const first = payload.detail[0];
             const field = first.loc?.[first.loc.length - 1];
@@ -183,9 +256,11 @@ export default function Home() {
         throw new Error("Prediction request failed.");
       }
       setResult((await response.json()) as PredictionResponse);
-      setLastSubmitted(formJson);
+      setLastFingerprint(JSON.stringify(form));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Prediction request failed.");
+      setError(
+        err instanceof Error ? err.message : "Prediction request failed.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -196,9 +271,11 @@ export default function Home() {
     ? ({
         "--gauge-deg": `${Math.round(result.adverse_outcome.probability * 360)}deg`,
         "--gauge-color":
-          tier === "high" ? "var(--high)" :
-          tier === "moderate" ? "var(--moderate)" :
-          "var(--low)",
+          tier === "high"
+            ? "var(--high)"
+            : tier === "moderate"
+              ? "var(--moderate)"
+              : "var(--low)",
       } as React.CSSProperties)
     : undefined;
   const waterfall = (() => {
@@ -207,14 +284,18 @@ export default function Home() {
     const baseline = result.explanation.baseline_probability;
     const target = result.adverse_outcome.probability;
     const selected = [...result.explanation.feature_effects.slice(0, 6)];
-    const selectedTotal = selected.reduce((sum, effect) => sum + effect.effect, 0);
+    const selectedTotal = selected.reduce(
+      (sum, effect) => sum + effect.effect,
+      0,
+    );
     const residual = target - baseline - selectedTotal;
 
     if (Math.abs(residual) > 0.0001) {
       selected.push({
         feature: "other_factors",
         effect: residual,
-        direction: residual > 0 ? "increase" : residual < 0 ? "decrease" : "neutral",
+        direction:
+          residual > 0 ? "increase" : residual < 0 ? "decrease" : "neutral",
         patient_value: null,
         reference_value: null,
       });
@@ -234,7 +315,10 @@ export default function Home() {
       target,
       baselinePos,
       segments: selected.map((segment, index) => {
-        const width = Math.max((Math.abs(segment.effect) / maxAbs) * axisHalfWidth, 1.2);
+        const width = Math.max(
+          (Math.abs(segment.effect) / maxAbs) * axisHalfWidth,
+          1.2,
+        );
         const left = segment.effect >= 0 ? baselinePos : baselinePos - width;
         return { ...segment, key: `${segment.feature}-${index}`, left, width };
       }),
@@ -245,19 +329,18 @@ export default function Home() {
     <main className="page-shell">
       <header className="site-header">
         <span className="header-tag">Cardiology · Risk Analysis</span>
-        <h1>Plaque Risk<br />Explorer</h1>
+        <h1>Plaque Risk Explorer</h1>
         <p className="header-sub">
-          Estimate the probability of adverse cardiovascular outcomes using patient
-          profile, cardiac function, comorbidities, and imaging findings. Review a
-          feature-effect waterfall to see which factors increase or decrease the
-          predicted risk.
+          Estimate the probability of adverse cardiovascular outcomes using
+          patient profile, cardiac function, comorbidities, and imaging
+          findings. Review a feature-effect waterfall to see which factors
+          increase or decrease the predicted risk.
         </p>
       </header>
 
       <div className="content-grid">
         {/* ── Form ── */}
-        <form className="form-panel" onSubmit={handleSubmit}>
-
+        <form ref={formRef} className="form-panel" onSubmit={handleSubmit}>
           <div className="form-section">
             <div className="section-label">
               <span className="section-label-main">
@@ -270,29 +353,57 @@ export default function Home() {
             </div>
             <div className="form-grid">
               <label className="field">
-                <span className="field-label">Gender</span>
+                <span
+                  className="field-label"
+                  data-hint="Biological sex at birth"
+                >
+                  Sex
+                </span>
                 <select
                   value={form.gender}
-                  onChange={(e) => updateField("gender", e.currentTarget.value as "female" | "male")}
+                  onChange={(e) =>
+                    updateField(
+                      "gender",
+                      e.currentTarget.value as "female" | "male",
+                    )
+                  }
                 >
                   <option value="female">Female</option>
                   <option value="male">Male</option>
                 </select>
               </label>
               <label className="field">
-                <span className="field-label">Age</span>
+                <span className="field-label" data-hint="Range 30 – 95 years">
+                  Age
+                </span>
                 <input
-                  type="number" min={30} max={95}
+                  type="number"
+                  data-field="age"
+                  min={30}
+                  max={95}
                   value={form.age}
-                  onChange={(e) => updateField("age", Number(e.currentTarget.value))}
+                  onChange={(e) =>
+                    updateField("age", Number(e.currentTarget.value))
+                  }
                 />
               </label>
               <label className="field">
-                <span className="field-label">BMI</span>
+                <span
+                  className="field-label"
+                  data-hint="Body mass index, 15 – 60 kg/m²"
+                >
+                  BMI
+                </span>
                 <input
-                  type="number" min={15} max={60} step="0.1"
+                  type="number"
+                  data-field="bmi"
+                  min={15}
+                  max={60}
+                  step="0.1"
                   value={form.bmi}
-                  onChange={(e) => updateField("bmi", Number(e.currentTarget.value))}
+                  onChange={(e) =>
+                    updateField("bmi", Number(e.currentTarget.value))
+                  }
                 />
               </label>
             </div>
@@ -310,11 +421,19 @@ export default function Home() {
             </div>
             <div className="form-grid">
               <label className="field">
-                <span className="field-label">Angina Class</span>
+                <span
+                  className="field-label"
+                  data-hint="CCS functional classification, 0 – III"
+                >
+                  Angina Class
+                </span>
                 <select
                   value={form.angina_functional_class}
                   onChange={(e) =>
-                    updateField("angina_functional_class", Number(e.currentTarget.value) as 0 | 1 | 2 | 3)
+                    updateField(
+                      "angina_functional_class",
+                      Number(e.currentTarget.value) as 0 | 1 | 2 | 3,
+                    )
                   }
                 >
                   <option value={0}>0</option>
@@ -324,33 +443,78 @@ export default function Home() {
                 </select>
               </label>
               <label className="field">
-                <span className="field-label">LVEF (%)</span>
+                <span
+                  className="field-label"
+                  data-hint="Left ventricular ejection fraction, 20 – 95 %"
+                >
+                  LVEF
+                </span>
                 <input
-                  type="number" min={20} max={95} step="1"
+                  type="number"
+                  data-field="lvef_percent"
+                  min={20}
+                  max={95}
+                  step="1"
                   value={form.lvef_percent}
-                  onChange={(e) => updateField("lvef_percent", Number(e.currentTarget.value))}
+                  onChange={(e) =>
+                    updateField("lvef_percent", Number(e.currentTarget.value))
+                  }
                 />
               </label>
               <label className="field">
-                <span className="field-label">SYNTAX Score</span>
+                <span
+                  className="field-label"
+                  data-hint="Coronary lesion complexity, 0 – 60 points"
+                >
+                  SYNTAX Score
+                </span>
                 <input
-                  type="number" min={0} max={60} step="1"
+                  type="number"
+                  data-field="syntax_score"
+                  min={0}
+                  max={60}
+                  step="1"
                   value={form.syntax_score}
-                  onChange={(e) => updateField("syntax_score", Number(e.currentTarget.value))}
+                  onChange={(e) =>
+                    updateField("syntax_score", Number(e.currentTarget.value))
+                  }
                 />
               </label>
               <label className="field">
-                <span className="field-label">Cholesterol (mmol/L)</span>
+                <span
+                  className="field-label"
+                  data-hint="Total cholesterol, 2.0 – 12.0 mmol/L"
+                >
+                  Cholesterol
+                </span>
                 <input
-                  type="number" min={2} max={12} step="0.1"
+                  type="number"
+                  data-field="cholesterol_level"
+                  min={2}
+                  max={12}
+                  step="0.1"
                   value={form.cholesterol_level}
-                  onChange={(e) => updateField("cholesterol_level", Number(e.currentTarget.value))}
+                  onChange={(e) =>
+                    updateField(
+                      "cholesterol_level",
+                      Number(e.currentTarget.value),
+                    )
+                  }
                 />
               </label>
               <label className="field">
-                <span className="field-label">FFR</span>
+                <span
+                  className="field-label"
+                  data-hint="Fractional flow reserve, 0.40 – 1.00"
+                >
+                  FFR
+                </span>
                 <input
-                  type="number" step="0.01" min={0.4} max={1.0}
+                  type="number"
+                  data-field="ffr"
+                  step="0.01"
+                  min={0.4}
+                  max={1.0}
                   value={ffrInput}
                   onChange={(e) => {
                     const v = e.currentTarget.value;
@@ -376,6 +540,7 @@ export default function Home() {
               {COMORBIDITIES.map(({ key, label }) => (
                 <label key={key} className="toggle-label">
                   <input
+                    className="sr-only"
                     type="checkbox"
                     checked={form[key] as boolean}
                     onChange={(e) => updateField(key, e.currentTarget.checked)}
@@ -399,28 +564,56 @@ export default function Home() {
             </div>
             <div className="form-grid">
               <label className="field">
-                <span className="field-label">Plaque Volume (%)</span>
+                <span
+                  className="field-label"
+                  data-hint="Plaque burden in vessel, 0 – 100 %"
+                >
+                  Plaque Volume
+                </span>
                 <input
-                  type="number" step="0.1" min={0} max={100}
+                  type="number"
+                  data-field="plaque_volume_percent"
+                  step="0.1"
+                  min={0}
+                  max={100}
                   value={form.plaque_volume_percent}
-                  onChange={(e) => updateField("plaque_volume_percent", Number(e.currentTarget.value))}
+                  onChange={(e) =>
+                    updateField(
+                      "plaque_volume_percent",
+                      Number(e.currentTarget.value),
+                    )
+                  }
                 />
               </label>
               <label className="field">
-                <span className="field-label">Lumen Area (mm²)</span>
+                <span
+                  className="field-label"
+                  data-hint="Minimal lumen cross-section, 0.5 – 15.0 mm²"
+                >
+                  Lumen Area
+                </span>
                 <input
-                  type="number" step="0.01" min={0.5} max={15}
+                  type="number"
+                  data-field="lumen_area"
+                  step="0.01"
+                  min={0.5}
+                  max={15}
                   value={form.lumen_area}
-                  onChange={(e) => updateField("lumen_area", Number(e.currentTarget.value))}
+                  onChange={(e) =>
+                    updateField("lumen_area", Number(e.currentTarget.value))
+                  }
                 />
               </label>
             </div>
-            <div className="toggle-grid" style={{ gridTemplateColumns: "1fr", marginTop: "12px" }}>
+            <div className="toggle-grid toggle-grid--single">
               <label className="toggle-label">
                 <input
+                  className="sr-only"
                   type="checkbox"
                   checked={form.unstable_plaque}
-                  onChange={(e) => updateField("unstable_plaque", e.currentTarget.checked)}
+                  onChange={(e) =>
+                    updateField("unstable_plaque", e.currentTarget.checked)
+                  }
                 />
                 <span className="toggle-dot" />
                 Unstable Plaque
@@ -428,17 +621,48 @@ export default function Home() {
             </div>
           </div>
 
-          <button className="run-btn" type="submit" disabled={isLoading}>
-            {isLoading ? (
-              <><span className="spinner" />Analyzing</>
-            ) : (
-              "Run Analysis"
-            )}
-          </button>
+          {error && (
+            <div className="error-bar" role="alert">
+              {error}
+            </div>
+          )}
+
+          <div className="form-actions">
+            <button
+              className={`run-btn${isLoading ? " is-loading" : ""}`}
+              type="submit"
+              disabled={submitDisabled}
+            >
+              {isLoading ? (
+                <>
+                  <span className="spinner" />
+                  Analyzing
+                  <span className="elapsed-time">{elapsed.toFixed(1)}s</span>
+                </>
+              ) : (
+                "Run Analysis"
+              )}
+            </button>
+            <div className="form-footer">
+              {isModified && (
+                <button
+                  type="button"
+                  className="reset-link"
+                  onClick={() => {
+                    setForm(initialForm);
+                    setFfrInput("0.83");
+                  }}
+                >
+                  Reset to defaults
+                </button>
+              )}
+              <span className="shortcut-hint">⌘/Ctrl + Enter</span>
+            </div>
+          </div>
         </form>
 
         {/* ── Result ── */}
-        <div className="result-panel">
+        <div className="result-panel" aria-live="polite">
           <div className="result-heading">
             <span className="result-heading-main">
               Adverse Outcome
@@ -457,9 +681,7 @@ export default function Home() {
                     <div className="gauge-percent">
                       {Math.round(result.adverse_outcome.probability * 100)}%
                     </div>
-                    <div className={`gauge-tier tier-${tier}`}>
-                      {tier}
-                    </div>
+                    <div className={`gauge-tier tier-${tier}`}>{tier}</div>
                   </div>
                 </div>
               </div>
@@ -483,8 +705,12 @@ export default function Home() {
                     </div>
 
                     <ul className="waterfall-list">
-                      {waterfall.segments.map((segment) => (
-                        <li key={segment.key} className="waterfall-row">
+                      {waterfall.segments.map((segment, i) => (
+                        <li
+                          key={segment.key}
+                          className="waterfall-row"
+                          style={{ animationDelay: `${i * 60}ms` }}
+                        >
                           <div className="waterfall-meta">
                             <span className="waterfall-name">
                               {humanizeFeature(segment.feature)}
@@ -512,8 +738,10 @@ export default function Home() {
 
                           {segment.feature !== "other_factors" && (
                             <div className="waterfall-values">
-                              patient {formatFeatureValue(segment.patient_value)} ·
-                              baseline {formatFeatureValue(segment.reference_value)}
+                              patient{" "}
+                              {formatFeatureValue(segment.patient_value)} ·
+                              baseline{" "}
+                              {formatFeatureValue(segment.reference_value)}
                             </div>
                           )}
                         </li>
@@ -521,13 +749,12 @@ export default function Home() {
                     </ul>
                   </>
                 )}
-
               </section>
             </>
           ) : (
             <div className="result-empty">
               <div className="pulse-ring" />
-              <span>Awaiting input</span>
+              <span>Enter patient data and run analysis</span>
             </div>
           )}
         </div>
@@ -543,13 +770,21 @@ export default function Home() {
                 text="A structured summary of the patient's risk profile, key risk drivers, protective factors, and suggested care focus areas."
               />
             </span>
-            <span className={`summary-source summary-source-${result.executive_summary.source}`}>
-              {result.executive_summary.source === "gemini" ? "Gemini" : "Fallback"}
+            <span
+              className={`summary-source summary-source-${result.executive_summary.source}`}
+            >
+              {result.executive_summary.source === "gemini"
+                ? "Gemini"
+                : "Fallback"}
             </span>
           </div>
 
-          <p className="summary-headline">{result.executive_summary.headline}</p>
-          <p className="summary-text">{result.executive_summary.clinical_summary}</p>
+          <p className="summary-headline">
+            {result.executive_summary.headline}
+          </p>
+          <p className="summary-text">
+            {result.executive_summary.clinical_summary}
+          </p>
 
           <div className="summary-columns">
             <div className="summary-group">
@@ -564,9 +799,11 @@ export default function Home() {
             <div className="summary-group">
               <h3>Protective Signals</h3>
               <ul>
-                {result.executive_summary.protective_signals.map((item, index) => (
-                  <li key={`${item}-${index}`}>{item}</li>
-                ))}
+                {result.executive_summary.protective_signals.map(
+                  (item, index) => (
+                    <li key={`${item}-${index}`}>{item}</li>
+                  ),
+                )}
               </ul>
             </div>
 
@@ -581,8 +818,6 @@ export default function Home() {
           </div>
         </section>
       )}
-
-      {error && <div className="error-bar">{error}</div>}
     </main>
   );
 }

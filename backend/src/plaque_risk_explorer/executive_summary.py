@@ -527,7 +527,7 @@ def generate_executive_summary(
         or _DEFAULT_GEMINI_MODEL
     )
     temperature = _safe_float(os.getenv("GEMINI_TEMPERATURE", "0"), 0.0)
-    timeout_seconds = _safe_float(os.getenv("GEMINI_TIMEOUT_SECONDS", "45"), 45.0)
+    timeout_seconds = _safe_float(os.getenv("GEMINI_TIMEOUT_SECONDS", "30"), 30.0)
 
     prompt = _build_prompt(
         patient_features,

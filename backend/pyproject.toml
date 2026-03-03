@@ -3,7 +3,7 @@ name = "plaque-risk-explorer"
 version = "0.1.0"
 description = "Association of Clinical Factors and Plaque Morphology with Adverse Cardiovascular Outcomes"
 authors = [
-    { name = "Viacheslav" }
+    { name = "Viacheslav Danilov" }
 ]
 requires-python = ">=3.13,<3.14"
 dependencies = [

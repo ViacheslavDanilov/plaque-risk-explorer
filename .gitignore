@@ -16,7 +16,6 @@ node_modules/
 .next/
 out/
 .pnpm-debug.log*
-pnpm-lock.yaml
 .env*.local
 
 # Data & Models
@@ -31,10 +30,6 @@ Thumbs.db
 # Editors
 .vscode/
 .idea/
-
-# Claude Code
-.claude/skills/
-!.claude/skills/**/SKILL.md
 
 # Models
 !backend/models/adverse_outcome
