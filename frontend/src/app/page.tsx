@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type RiskTier = "low" | "moderate" | "high";
 
@@ -151,6 +151,41 @@ export default function Home() {
   const [lastSubmitted, setLastSubmitted] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  /* Scroll wheel adjusts number inputs without scrolling the page */
+  useEffect(() => {
+    const el = formRef.current;
+    if (!el) return;
+
+    const nativeSetter = Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      "value",
+    )?.set;
+
+    const handler = (e: WheelEvent) => {
+      const input = e.target as HTMLInputElement;
+      if (input.tagName !== "INPUT" || input.type !== "number") return;
+      e.preventDefault();
+
+      const step = parseFloat(input.step) || 1;
+      const min = input.min !== "" ? parseFloat(input.min) : -Infinity;
+      const max = input.max !== "" ? parseFloat(input.max) : Infinity;
+      const current = parseFloat(input.value) || 0;
+      const direction = e.deltaY < 0 ? 1 : -1;
+      const decimals = (input.step.split(".")[1] || "").length;
+      const next = Math.min(
+        max,
+        Math.max(min, parseFloat((current + direction * step).toFixed(decimals))),
+      );
+
+      nativeSetter?.call(input, String(next));
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    };
+
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => el.removeEventListener("wheel", handler);
+  }, []);
 
   const updateField = <K extends keyof PredictionRequest>(
     key: K,
@@ -276,7 +311,7 @@ export default function Home() {
 
       <div className="content-grid">
         {/* ── Form ── */}
-        <form className="form-panel" onSubmit={handleSubmit}>
+        <form ref={formRef} className="form-panel" onSubmit={handleSubmit}>
           <div className="form-section">
             <div className="section-label">
               <span className="section-label-main">
