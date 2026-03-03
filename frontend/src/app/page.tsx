@@ -83,6 +83,8 @@ const initialForm: PredictionRequest = {
   unstable_plaque: false,
 };
 
+const initialFingerprint = JSON.stringify(initialForm);
+
 const COMORBIDITIES: { key: keyof PredictionRequest; label: string }[] = [
   { key: "diabetes_mellitus", label: "Diabetes Mellitus" },
   { key: "hypertension", label: "Hypertension" },
@@ -157,6 +159,7 @@ export default function Home() {
   const submitDisabled =
     isLoading ||
     (lastFingerprint !== null && lastFingerprint === currentFingerprint);
+  const isModified = currentFingerprint !== initialFingerprint;
 
   /* Scroll wheel adjusts number inputs without scrolling the page */
   useEffect(() => {
@@ -617,20 +620,37 @@ export default function Home() {
             </div>
           )}
 
-          <button
-            className={`run-btn${isLoading ? " is-loading" : ""}`}
-            type="submit"
-            disabled={submitDisabled}
-          >
-            {isLoading ? (
-              <>
-                <span className="spinner" />
-                Analyzing
-              </>
-            ) : (
-              "Run Analysis"
-            )}
-          </button>
+          <div className="form-actions">
+            <button
+              className={`run-btn${isLoading ? " is-loading" : ""}`}
+              type="submit"
+              disabled={submitDisabled}
+            >
+              {isLoading ? (
+                <>
+                  <span className="spinner" />
+                  Analyzing
+                </>
+              ) : (
+                "Run Analysis"
+              )}
+            </button>
+            <div className="form-footer">
+              {isModified && (
+                <button
+                  type="button"
+                  className="reset-link"
+                  onClick={() => {
+                    setForm(initialForm);
+                    setFfrInput("0.83");
+                  }}
+                >
+                  Reset to defaults
+                </button>
+              )}
+              <span className="shortcut-hint">⌘/Ctrl + Enter</span>
+            </div>
+          </div>
         </form>
 
         {/* ── Result ── */}
@@ -677,8 +697,12 @@ export default function Home() {
                     </div>
 
                     <ul className="waterfall-list">
-                      {waterfall.segments.map((segment) => (
-                        <li key={segment.key} className="waterfall-row">
+                      {waterfall.segments.map((segment, i) => (
+                        <li
+                          key={segment.key}
+                          className="waterfall-row"
+                          style={{ animationDelay: `${i * 60}ms` }}
+                        >
                           <div className="waterfall-meta">
                             <span className="waterfall-name">
                               {humanizeFeature(segment.feature)}
