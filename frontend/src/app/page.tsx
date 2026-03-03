@@ -84,10 +84,10 @@ const initialForm: PredictionRequest = {
 };
 
 const COMORBIDITIES: { key: keyof PredictionRequest; label: string }[] = [
-  { key: "diabetes_mellitus",            label: "Diabetes Mellitus" },
-  { key: "hypertension",                 label: "Hypertension" },
+  { key: "diabetes_mellitus", label: "Diabetes Mellitus" },
+  { key: "hypertension", label: "Hypertension" },
   { key: "post_infarction_cardiosclerosis", label: "Post-MI Cardiosclerosis" },
-  { key: "multifocal_atherosclerosis",   label: "Multifocal Atherosclerosis" },
+  { key: "multifocal_atherosclerosis", label: "Multifocal Atherosclerosis" },
 ];
 
 const humanizeFeature = (feature: string): string => {
@@ -97,7 +97,12 @@ const humanizeFeature = (feature: string): string => {
   return feature
     .split("_")
     .map((word) => {
-      if (word === "ffr" || word === "bmi" || word === "lvef" || word === "syntax") {
+      if (
+        word === "ffr" ||
+        word === "bmi" ||
+        word === "lvef" ||
+        word === "syntax"
+      ) {
         return word.toUpperCase();
       }
       return `${word.charAt(0).toUpperCase()}${word.slice(1)}`;
@@ -166,9 +171,9 @@ export default function Home() {
       });
       if (!response.ok) {
         if (response.status === 422) {
-          const payload = (await response.json().catch(() => null)) as
-            | { detail?: Array<{ loc?: string[]; msg?: string }> | string }
-            | null;
+          const payload = (await response.json().catch(() => null)) as {
+            detail?: Array<{ loc?: string[]; msg?: string }> | string;
+          } | null;
           if (Array.isArray(payload?.detail) && payload.detail.length > 0) {
             const first = payload.detail[0];
             const field = first.loc?.[first.loc.length - 1];
@@ -185,7 +190,9 @@ export default function Home() {
       setResult((await response.json()) as PredictionResponse);
       setLastSubmitted(formJson);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Prediction request failed.");
+      setError(
+        err instanceof Error ? err.message : "Prediction request failed.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -196,9 +203,11 @@ export default function Home() {
     ? ({
         "--gauge-deg": `${Math.round(result.adverse_outcome.probability * 360)}deg`,
         "--gauge-color":
-          tier === "high" ? "var(--high)" :
-          tier === "moderate" ? "var(--moderate)" :
-          "var(--low)",
+          tier === "high"
+            ? "var(--high)"
+            : tier === "moderate"
+              ? "var(--moderate)"
+              : "var(--low)",
       } as React.CSSProperties)
     : undefined;
   const waterfall = (() => {
@@ -207,14 +216,18 @@ export default function Home() {
     const baseline = result.explanation.baseline_probability;
     const target = result.adverse_outcome.probability;
     const selected = [...result.explanation.feature_effects.slice(0, 6)];
-    const selectedTotal = selected.reduce((sum, effect) => sum + effect.effect, 0);
+    const selectedTotal = selected.reduce(
+      (sum, effect) => sum + effect.effect,
+      0,
+    );
     const residual = target - baseline - selectedTotal;
 
     if (Math.abs(residual) > 0.0001) {
       selected.push({
         feature: "other_factors",
         effect: residual,
-        direction: residual > 0 ? "increase" : residual < 0 ? "decrease" : "neutral",
+        direction:
+          residual > 0 ? "increase" : residual < 0 ? "decrease" : "neutral",
         patient_value: null,
         reference_value: null,
       });
@@ -234,7 +247,10 @@ export default function Home() {
       target,
       baselinePos,
       segments: selected.map((segment, index) => {
-        const width = Math.max((Math.abs(segment.effect) / maxAbs) * axisHalfWidth, 1.2);
+        const width = Math.max(
+          (Math.abs(segment.effect) / maxAbs) * axisHalfWidth,
+          1.2,
+        );
         const left = segment.effect >= 0 ? baselinePos : baselinePos - width;
         return { ...segment, key: `${segment.feature}-${index}`, left, width };
       }),
@@ -245,19 +261,22 @@ export default function Home() {
     <main className="page-shell">
       <header className="site-header">
         <span className="header-tag">Cardiology · Risk Analysis</span>
-        <h1>Plaque Risk<br />Explorer</h1>
+        <h1>
+          Plaque Risk
+          <br />
+          Explorer
+        </h1>
         <p className="header-sub">
-          Estimate the probability of adverse cardiovascular outcomes using patient
-          profile, cardiac function, comorbidities, and imaging findings. Review a
-          feature-effect waterfall to see which factors increase or decrease the
-          predicted risk.
+          Estimate the probability of adverse cardiovascular outcomes using
+          patient profile, cardiac function, comorbidities, and imaging
+          findings. Review a feature-effect waterfall to see which factors
+          increase or decrease the predicted risk.
         </p>
       </header>
 
       <div className="content-grid">
         {/* ── Form ── */}
         <form className="form-panel" onSubmit={handleSubmit}>
-
           <div className="form-section">
             <div className="section-label">
               <span className="section-label-main">
@@ -273,7 +292,12 @@ export default function Home() {
                 <span className="field-label">Gender</span>
                 <select
                   value={form.gender}
-                  onChange={(e) => updateField("gender", e.currentTarget.value as "female" | "male")}
+                  onChange={(e) =>
+                    updateField(
+                      "gender",
+                      e.currentTarget.value as "female" | "male",
+                    )
+                  }
                 >
                   <option value="female">Female</option>
                   <option value="male">Male</option>
@@ -282,17 +306,26 @@ export default function Home() {
               <label className="field">
                 <span className="field-label">Age</span>
                 <input
-                  type="number" min={30} max={95}
+                  type="number"
+                  min={30}
+                  max={95}
                   value={form.age}
-                  onChange={(e) => updateField("age", Number(e.currentTarget.value))}
+                  onChange={(e) =>
+                    updateField("age", Number(e.currentTarget.value))
+                  }
                 />
               </label>
               <label className="field">
                 <span className="field-label">BMI</span>
                 <input
-                  type="number" min={15} max={60} step="0.1"
+                  type="number"
+                  min={15}
+                  max={60}
+                  step="0.1"
                   value={form.bmi}
-                  onChange={(e) => updateField("bmi", Number(e.currentTarget.value))}
+                  onChange={(e) =>
+                    updateField("bmi", Number(e.currentTarget.value))
+                  }
                 />
               </label>
             </div>
@@ -314,7 +347,10 @@ export default function Home() {
                 <select
                   value={form.angina_functional_class}
                   onChange={(e) =>
-                    updateField("angina_functional_class", Number(e.currentTarget.value) as 0 | 1 | 2 | 3)
+                    updateField(
+                      "angina_functional_class",
+                      Number(e.currentTarget.value) as 0 | 1 | 2 | 3,
+                    )
                   }
                 >
                   <option value={0}>0</option>
@@ -326,31 +362,52 @@ export default function Home() {
               <label className="field">
                 <span className="field-label">LVEF (%)</span>
                 <input
-                  type="number" min={20} max={95} step="1"
+                  type="number"
+                  min={20}
+                  max={95}
+                  step="1"
                   value={form.lvef_percent}
-                  onChange={(e) => updateField("lvef_percent", Number(e.currentTarget.value))}
+                  onChange={(e) =>
+                    updateField("lvef_percent", Number(e.currentTarget.value))
+                  }
                 />
               </label>
               <label className="field">
                 <span className="field-label">SYNTAX Score</span>
                 <input
-                  type="number" min={0} max={60} step="1"
+                  type="number"
+                  min={0}
+                  max={60}
+                  step="1"
                   value={form.syntax_score}
-                  onChange={(e) => updateField("syntax_score", Number(e.currentTarget.value))}
+                  onChange={(e) =>
+                    updateField("syntax_score", Number(e.currentTarget.value))
+                  }
                 />
               </label>
               <label className="field">
                 <span className="field-label">Cholesterol (mmol/L)</span>
                 <input
-                  type="number" min={2} max={12} step="0.1"
+                  type="number"
+                  min={2}
+                  max={12}
+                  step="0.1"
                   value={form.cholesterol_level}
-                  onChange={(e) => updateField("cholesterol_level", Number(e.currentTarget.value))}
+                  onChange={(e) =>
+                    updateField(
+                      "cholesterol_level",
+                      Number(e.currentTarget.value),
+                    )
+                  }
                 />
               </label>
               <label className="field">
                 <span className="field-label">FFR</span>
                 <input
-                  type="number" step="0.01" min={0.4} max={1.0}
+                  type="number"
+                  step="0.01"
+                  min={0.4}
+                  max={1.0}
                   value={ffrInput}
                   onChange={(e) => {
                     const v = e.currentTarget.value;
@@ -401,26 +458,44 @@ export default function Home() {
               <label className="field">
                 <span className="field-label">Plaque Volume (%)</span>
                 <input
-                  type="number" step="0.1" min={0} max={100}
+                  type="number"
+                  step="0.1"
+                  min={0}
+                  max={100}
                   value={form.plaque_volume_percent}
-                  onChange={(e) => updateField("plaque_volume_percent", Number(e.currentTarget.value))}
+                  onChange={(e) =>
+                    updateField(
+                      "plaque_volume_percent",
+                      Number(e.currentTarget.value),
+                    )
+                  }
                 />
               </label>
               <label className="field">
                 <span className="field-label">Lumen Area (mm²)</span>
                 <input
-                  type="number" step="0.01" min={0.5} max={15}
+                  type="number"
+                  step="0.01"
+                  min={0.5}
+                  max={15}
                   value={form.lumen_area}
-                  onChange={(e) => updateField("lumen_area", Number(e.currentTarget.value))}
+                  onChange={(e) =>
+                    updateField("lumen_area", Number(e.currentTarget.value))
+                  }
                 />
               </label>
             </div>
-            <div className="toggle-grid" style={{ gridTemplateColumns: "1fr", marginTop: "12px" }}>
+            <div
+              className="toggle-grid"
+              style={{ gridTemplateColumns: "1fr", marginTop: "12px" }}
+            >
               <label className="toggle-label">
                 <input
                   type="checkbox"
                   checked={form.unstable_plaque}
-                  onChange={(e) => updateField("unstable_plaque", e.currentTarget.checked)}
+                  onChange={(e) =>
+                    updateField("unstable_plaque", e.currentTarget.checked)
+                  }
                 />
                 <span className="toggle-dot" />
                 Unstable Plaque
@@ -430,7 +505,10 @@ export default function Home() {
 
           <button className="run-btn" type="submit" disabled={isLoading}>
             {isLoading ? (
-              <><span className="spinner" />Analyzing</>
+              <>
+                <span className="spinner" />
+                Analyzing
+              </>
             ) : (
               "Run Analysis"
             )}
@@ -457,9 +535,7 @@ export default function Home() {
                     <div className="gauge-percent">
                       {Math.round(result.adverse_outcome.probability * 100)}%
                     </div>
-                    <div className={`gauge-tier tier-${tier}`}>
-                      {tier}
-                    </div>
+                    <div className={`gauge-tier tier-${tier}`}>{tier}</div>
                   </div>
                 </div>
               </div>
@@ -512,8 +588,10 @@ export default function Home() {
 
                           {segment.feature !== "other_factors" && (
                             <div className="waterfall-values">
-                              patient {formatFeatureValue(segment.patient_value)} ·
-                              baseline {formatFeatureValue(segment.reference_value)}
+                              patient{" "}
+                              {formatFeatureValue(segment.patient_value)} ·
+                              baseline{" "}
+                              {formatFeatureValue(segment.reference_value)}
                             </div>
                           )}
                         </li>
@@ -521,7 +599,6 @@ export default function Home() {
                     </ul>
                   </>
                 )}
-
               </section>
             </>
           ) : (
@@ -543,13 +620,21 @@ export default function Home() {
                 text="A structured summary of the patient's risk profile, key risk drivers, protective factors, and suggested care focus areas."
               />
             </span>
-            <span className={`summary-source summary-source-${result.executive_summary.source}`}>
-              {result.executive_summary.source === "gemini" ? "Gemini" : "Fallback"}
+            <span
+              className={`summary-source summary-source-${result.executive_summary.source}`}
+            >
+              {result.executive_summary.source === "gemini"
+                ? "Gemini"
+                : "Fallback"}
             </span>
           </div>
 
-          <p className="summary-headline">{result.executive_summary.headline}</p>
-          <p className="summary-text">{result.executive_summary.clinical_summary}</p>
+          <p className="summary-headline">
+            {result.executive_summary.headline}
+          </p>
+          <p className="summary-text">
+            {result.executive_summary.clinical_summary}
+          </p>
 
           <div className="summary-columns">
             <div className="summary-group">
@@ -564,9 +649,11 @@ export default function Home() {
             <div className="summary-group">
               <h3>Protective Signals</h3>
               <ul>
-                {result.executive_summary.protective_signals.map((item, index) => (
-                  <li key={`${item}-${index}`}>{item}</li>
-                ))}
+                {result.executive_summary.protective_signals.map(
+                  (item, index) => (
+                    <li key={`${item}-${index}`}>{item}</li>
+                  ),
+                )}
               </ul>
             </div>
 

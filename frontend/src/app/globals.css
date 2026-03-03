@@ -2,33 +2,37 @@
 
 /* ── Tokens ─────────────────────────────────── */
 :root {
-  --bg:           #060d14;
-  --surface:      #0b1724;
-  --surface-2:    #112030;
-  --border:       #1c3045;
-  --border-hi:    #2a4560;
-  --text:         #bdd4e4;
-  --text-strong:  #dceef8;
-  --muted:        #3d6278;
-  --muted-2:      #2b4a61;
+  --bg: #060d14;
+  --surface: #0b1724;
+  --surface-2: #112030;
+  --border: #1c3045;
+  --border-hi: #2a4560;
+  --text: #bdd4e4;
+  --text-strong: #dceef8;
+  --muted: #3d6278;
+  --muted-2: #2b4a61;
 
-  --accent:       #00e4aa;
-  --accent-dim:   rgba(0, 228, 170, 0.08);
-  --accent-glow:  rgba(0, 228, 170, 0.22);
+  --accent: #00e4aa;
+  --accent-dim: rgba(0, 228, 170, 0.08);
+  --accent-glow: rgba(0, 228, 170, 0.22);
 
-  --low:          #00e4aa;
-  --low-dim:      rgba(0, 228, 170, 0.14);
-  --moderate:     #f5a623;
+  --low: #00e4aa;
+  --low-dim: rgba(0, 228, 170, 0.14);
+  --moderate: #f5a623;
   --moderate-dim: rgba(245, 166, 35, 0.14);
-  --high:         #f04155;
-  --high-dim:     rgba(240, 65, 85, 0.14);
+  --high: #f04155;
+  --high-dim: rgba(240, 65, 85, 0.14);
 
   --font-display: var(--font-display, "DM Serif Display", serif);
-  --font-mono:    var(--font-mono, "IBM Plex Mono", monospace);
+  --font-mono: var(--font-mono, "IBM Plex Mono", monospace);
 }
 
 /* ── Reset ──────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -124,7 +128,7 @@ h1 {
 }
 
 .section-label::after {
-  content: '';
+  content: "";
   flex: 1;
   height: 1px;
   background: var(--border);
@@ -169,7 +173,9 @@ select {
   padding: 10px 13px;
   color: var(--text-strong);
   width: 100%;
-  transition: border-color 160ms, box-shadow 160ms;
+  transition:
+    border-color 160ms,
+    box-shadow 160ms;
   -webkit-appearance: none;
   appearance: none;
 }
@@ -208,7 +214,10 @@ select:focus {
   font-size: 12px;
   color: var(--text);
   user-select: none;
-  transition: border-color 160ms, background 160ms, color 160ms;
+  transition:
+    border-color 160ms,
+    background 160ms,
+    color 160ms;
   letter-spacing: 0.02em;
 }
 
@@ -231,12 +240,14 @@ select:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 160ms, background 160ms;
+  transition:
+    border-color 160ms,
+    background 160ms;
   position: relative;
 }
 
 .toggle-dot::after {
-  content: '';
+  content: "";
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -269,7 +280,10 @@ select:focus {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: opacity 180ms, transform 180ms, box-shadow 180ms;
+  transition:
+    opacity 180ms,
+    transform 180ms,
+    box-shadow 180ms;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -326,7 +340,7 @@ select:focus {
 }
 
 .result-heading::after {
-  content: '';
+  content: "";
   flex: 1;
   height: 1px;
   background: var(--border);
@@ -343,7 +357,7 @@ select:focus {
 
 /* ── Gauge ──────────────────────────────────── */
 @property --gauge-deg {
-  syntax: '<angle>';
+  syntax: "<angle>";
   inherits: false;
   initial-value: 0deg;
 }
@@ -397,9 +411,15 @@ select:focus {
   font-weight: 600;
 }
 
-.gauge-tier.tier-low      { color: var(--low); }
-.gauge-tier.tier-moderate { color: var(--moderate); }
-.gauge-tier.tier-high     { color: var(--high); }
+.gauge-tier.tier-low {
+  color: var(--low);
+}
+.gauge-tier.tier-moderate {
+  color: var(--moderate);
+}
+.gauge-tier.tier-high {
+  color: var(--high);
+}
 
 /* ── Executive summary panel ───────────────── */
 .summary-panel {
@@ -410,7 +430,6 @@ select:focus {
   background: var(--surface);
   animation: fade-up 560ms 240ms ease-out both;
 }
-
 
 .summary-card-head {
   display: flex;
@@ -517,7 +536,7 @@ select:focus {
 }
 
 .explanation-head::after {
-  content: '';
+  content: "";
   flex: 1;
   height: 1px;
   background: var(--border);
@@ -577,9 +596,15 @@ select:focus {
   letter-spacing: 0.04em;
 }
 
-.waterfall-delta-increase { color: var(--high); }
-.waterfall-delta-decrease { color: var(--low); }
-.waterfall-delta-neutral  { color: var(--muted); }
+.waterfall-delta-increase {
+  color: var(--high);
+}
+.waterfall-delta-decrease {
+  color: var(--low);
+}
+.waterfall-delta-neutral {
+  color: var(--muted);
+}
 
 .waterfall-track {
   position: relative;
@@ -685,7 +710,9 @@ select:focus {
   opacity: 0;
   transform: translate(-50%, 4px);
   pointer-events: none;
-  transition: opacity 130ms ease, transform 130ms ease;
+  transition:
+    opacity 130ms ease,
+    transform 130ms ease;
   z-index: 2;
 }
 
@@ -721,7 +748,7 @@ select:focus {
 }
 
 .pulse-ring::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: -10px;
   border-radius: 50%;
@@ -730,7 +757,7 @@ select:focus {
 }
 
 .pulse-ring::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 21px;
   border-radius: 50%;
@@ -753,22 +780,44 @@ select:focus {
 
 /* ── Animations ─────────────────────────────── */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1);    opacity: 0.26; }
-  50%      { transform: scale(1.26); opacity: 0.82; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.26;
+  }
+  50% {
+    transform: scale(1.26);
+    opacity: 0.82;
+  }
 }
 
 @keyframes pulse-core {
-  0%, 100% { transform: scale(0.9); opacity: 0.32; }
-  50%      { transform: scale(1.15); opacity: 0.78; }
+  0%,
+  100% {
+    transform: scale(0.9);
+    opacity: 0.32;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.78;
+  }
 }
 
 /* ── Responsive ─────────────────────────────── */
