@@ -5,9 +5,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# LightGBM runtime dependency
+# Build tools required by statsforecast (autogluon transitive dep)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends libgomp1 && \
+    apt-get install -y --no-install-recommends g++ && \
     rm -rf /var/lib/apt/lists/*
 
 # Install uv
