@@ -148,10 +148,15 @@ export default function Home() {
   const [form, setForm] = useState<PredictionRequest>(initialForm);
   const [ffrInput, setFfrInput] = useState<string>("0.83");
   const [result, setResult] = useState<PredictionResponse | null>(null);
-  const [lastSubmitted, setLastSubmitted] = useState<string | null>(null);
+  const [lastFingerprint, setLastFingerprint] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+
+  const currentFingerprint = JSON.stringify(form);
+  const submitDisabled =
+    isLoading ||
+    (lastFingerprint !== null && lastFingerprint === currentFingerprint);
 
   /* Scroll wheel adjusts number inputs without scrolling the page */
   useEffect(() => {
@@ -190,6 +195,18 @@ export default function Home() {
     return () => el.removeEventListener("wheel", handler);
   }, []);
 
+  /* Ctrl/Cmd + Enter to submit from any field */
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        formRef.current?.requestSubmit();
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, []);
+
   const updateField = <K extends keyof PredictionRequest>(
     key: K,
     value: PredictionRequest[K],
@@ -197,8 +214,7 @@ export default function Home() {
 
   const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formJson = JSON.stringify(form);
-    if (result && formJson === lastSubmitted) return;
+    if (submitDisabled) return;
     setIsLoading(true);
     setError(null);
     try {
@@ -226,7 +242,7 @@ export default function Home() {
         throw new Error("Prediction request failed.");
       }
       setResult((await response.json()) as PredictionResponse);
-      setLastSubmitted(formJson);
+      setLastFingerprint(JSON.stringify(form));
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Prediction request failed.",
@@ -327,7 +343,7 @@ export default function Home() {
             </div>
             <div className="form-grid">
               <label className="field">
-                <span className="field-label">Gender</span>
+                <span className="field-label">Sex</span>
                 <select
                   value={form.gender}
                   onChange={(e) =>
@@ -342,7 +358,9 @@ export default function Home() {
                 </select>
               </label>
               <label className="field">
-                <span className="field-label">Age</span>
+                <span className="field-label" data-hint="Range 30 – 95 years">
+                  Age
+                </span>
                 <input
                   type="number"
                   data-field="age"
@@ -355,7 +373,12 @@ export default function Home() {
                 />
               </label>
               <label className="field">
-                <span className="field-label">BMI</span>
+                <span
+                  className="field-label"
+                  data-hint="Body mass index, 15 – 60 kg/m²"
+                >
+                  BMI
+                </span>
                 <input
                   type="number"
                   data-field="bmi"
@@ -400,7 +423,12 @@ export default function Home() {
                 </select>
               </label>
               <label className="field">
-                <span className="field-label">LVEF (%)</span>
+                <span
+                  className="field-label"
+                  data-hint="Left ventricular ejection fraction, 20 – 95 %"
+                >
+                  LVEF
+                </span>
                 <input
                   type="number"
                   data-field="lvef_percent"
@@ -414,7 +442,12 @@ export default function Home() {
                 />
               </label>
               <label className="field">
-                <span className="field-label">SYNTAX Score</span>
+                <span
+                  className="field-label"
+                  data-hint="Coronary lesion complexity, 0 – 60 points"
+                >
+                  SYNTAX Score
+                </span>
                 <input
                   type="number"
                   data-field="syntax_score"
@@ -428,7 +461,12 @@ export default function Home() {
                 />
               </label>
               <label className="field">
-                <span className="field-label">Cholesterol (mmol/L)</span>
+                <span
+                  className="field-label"
+                  data-hint="Total cholesterol, 2.0 – 12.0 mmol/L"
+                >
+                  Cholesterol
+                </span>
                 <input
                   type="number"
                   data-field="cholesterol_level"
@@ -445,7 +483,12 @@ export default function Home() {
                 />
               </label>
               <label className="field">
-                <span className="field-label">FFR</span>
+                <span
+                  className="field-label"
+                  data-hint="Fractional flow reserve, 0.40 – 1.00"
+                >
+                  FFR
+                </span>
                 <input
                   type="number"
                   data-field="ffr"
@@ -477,6 +520,7 @@ export default function Home() {
               {COMORBIDITIES.map(({ key, label }) => (
                 <label key={key} className="toggle-label">
                   <input
+                    className="sr-only"
                     type="checkbox"
                     checked={form[key] as boolean}
                     onChange={(e) => updateField(key, e.currentTarget.checked)}
@@ -500,7 +544,12 @@ export default function Home() {
             </div>
             <div className="form-grid">
               <label className="field">
-                <span className="field-label">Plaque Volume (%)</span>
+                <span
+                  className="field-label"
+                  data-hint="Plaque burden in vessel, 0 – 100 %"
+                >
+                  Plaque Volume
+                </span>
                 <input
                   type="number"
                   data-field="plaque_volume_percent"
@@ -517,7 +566,12 @@ export default function Home() {
                 />
               </label>
               <label className="field">
-                <span className="field-label">Lumen Area (mm²)</span>
+                <span
+                  className="field-label"
+                  data-hint="Minimal lumen cross-section, 0.5 – 15.0 mm²"
+                >
+                  Lumen Area
+                </span>
                 <input
                   type="number"
                   data-field="lumen_area"
@@ -537,6 +591,7 @@ export default function Home() {
             >
               <label className="toggle-label">
                 <input
+                  className="sr-only"
                   type="checkbox"
                   checked={form.unstable_plaque}
                   onChange={(e) =>
@@ -549,7 +604,9 @@ export default function Home() {
             </div>
           </div>
 
-          <button className="run-btn" type="submit" disabled={isLoading}>
+          {error && <div className="error-bar">{error}</div>}
+
+          <button className="run-btn" type="submit" disabled={submitDisabled}>
             {isLoading ? (
               <>
                 <span className="spinner" />
@@ -562,7 +619,7 @@ export default function Home() {
         </form>
 
         {/* ── Result ── */}
-        <div className="result-panel">
+        <div className="result-panel" aria-live="polite">
           <div className="result-heading">
             <span className="result-heading-main">
               Adverse Outcome
@@ -650,7 +707,7 @@ export default function Home() {
           ) : (
             <div className="result-empty">
               <div className="pulse-ring" />
-              <span>Awaiting input</span>
+              <span>Enter patient data and run analysis</span>
             </div>
           )}
         </div>
@@ -714,8 +771,6 @@ export default function Home() {
           </div>
         </section>
       )}
-
-      {error && <div className="error-bar">{error}</div>}
     </main>
   );
 }
