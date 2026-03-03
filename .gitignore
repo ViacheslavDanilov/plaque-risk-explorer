@@ -31,9 +31,5 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Claude Code
-.claude/skills/
-!.claude/skills/**/SKILL.md
-
 # Models
 !backend/models/adverse_outcome
