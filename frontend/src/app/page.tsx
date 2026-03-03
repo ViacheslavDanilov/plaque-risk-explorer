@@ -158,29 +158,32 @@ export default function Home() {
     const el = formRef.current;
     if (!el) return;
 
-    const nativeSetter = Object.getOwnPropertyDescriptor(
-      HTMLInputElement.prototype,
-      "value",
-    )?.set;
-
     const handler = (e: WheelEvent) => {
-      const input = e.target as HTMLInputElement;
-      if (input.tagName !== "INPUT" || input.type !== "number") return;
+      const input = (e.target as HTMLElement).closest(
+        'input[type="number"]',
+      ) as HTMLInputElement | null;
+      if (!input) return;
       e.preventDefault();
+
+      const field = input.dataset.field as keyof PredictionRequest | undefined;
+      if (!field) return;
 
       const step = parseFloat(input.step) || 1;
       const min = input.min !== "" ? parseFloat(input.min) : -Infinity;
       const max = input.max !== "" ? parseFloat(input.max) : Infinity;
       const current = parseFloat(input.value) || 0;
       const direction = e.deltaY < 0 ? 1 : -1;
-      const decimals = (input.step.split(".")[1] || "").length;
+      const decimals = Math.max((input.step.split(".")[1] || "").length, 0);
       const next = Math.min(
         max,
-        Math.max(min, parseFloat((current + direction * step).toFixed(decimals))),
+        Math.max(
+          min,
+          parseFloat((current + direction * step).toFixed(decimals)),
+        ),
       );
 
-      nativeSetter?.call(input, String(next));
-      input.dispatchEvent(new Event("input", { bubbles: true }));
+      setForm((prev) => ({ ...prev, [field]: next }));
+      if (field === "ffr") setFfrInput(String(next));
     };
 
     el.addEventListener("wheel", handler, { passive: false });
@@ -342,6 +345,7 @@ export default function Home() {
                 <span className="field-label">Age</span>
                 <input
                   type="number"
+                  data-field="age"
                   min={30}
                   max={95}
                   value={form.age}
@@ -354,6 +358,7 @@ export default function Home() {
                 <span className="field-label">BMI</span>
                 <input
                   type="number"
+                  data-field="bmi"
                   min={15}
                   max={60}
                   step="0.1"
@@ -398,6 +403,7 @@ export default function Home() {
                 <span className="field-label">LVEF (%)</span>
                 <input
                   type="number"
+                  data-field="lvef_percent"
                   min={20}
                   max={95}
                   step="1"
@@ -411,6 +417,7 @@ export default function Home() {
                 <span className="field-label">SYNTAX Score</span>
                 <input
                   type="number"
+                  data-field="syntax_score"
                   min={0}
                   max={60}
                   step="1"
@@ -424,6 +431,7 @@ export default function Home() {
                 <span className="field-label">Cholesterol (mmol/L)</span>
                 <input
                   type="number"
+                  data-field="cholesterol_level"
                   min={2}
                   max={12}
                   step="0.1"
@@ -440,6 +448,7 @@ export default function Home() {
                 <span className="field-label">FFR</span>
                 <input
                   type="number"
+                  data-field="ffr"
                   step="0.01"
                   min={0.4}
                   max={1.0}
@@ -494,6 +503,7 @@ export default function Home() {
                 <span className="field-label">Plaque Volume (%)</span>
                 <input
                   type="number"
+                  data-field="plaque_volume_percent"
                   step="0.1"
                   min={0}
                   max={100}
@@ -510,6 +520,7 @@ export default function Home() {
                 <span className="field-label">Lumen Area (mm²)</span>
                 <input
                   type="number"
+                  data-field="lumen_area"
                   step="0.01"
                   min={0.5}
                   max={15}
