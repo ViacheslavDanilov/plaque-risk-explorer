@@ -343,7 +343,12 @@ export default function Home() {
             </div>
             <div className="form-grid">
               <label className="field">
-                <span className="field-label">Sex</span>
+                <span
+                  className="field-label"
+                  data-hint="Biological sex at birth"
+                >
+                  Sex
+                </span>
                 <select
                   value={form.gender}
                   onChange={(e) =>
@@ -406,7 +411,12 @@ export default function Home() {
             </div>
             <div className="form-grid">
               <label className="field">
-                <span className="field-label">Angina Class</span>
+                <span
+                  className="field-label"
+                  data-hint="CCS functional classification, 0 – III"
+                >
+                  Angina Class
+                </span>
                 <select
                   value={form.angina_functional_class}
                   onChange={(e) =>
@@ -585,10 +595,7 @@ export default function Home() {
                 />
               </label>
             </div>
-            <div
-              className="toggle-grid"
-              style={{ gridTemplateColumns: "1fr", marginTop: "12px" }}
-            >
+            <div className="toggle-grid toggle-grid--single">
               <label className="toggle-label">
                 <input
                   className="sr-only"
@@ -604,9 +611,17 @@ export default function Home() {
             </div>
           </div>
 
-          {error && <div className="error-bar">{error}</div>}
+          {error && (
+            <div className="error-bar" role="alert">
+              {error}
+            </div>
+          )}
 
-          <button className="run-btn" type="submit" disabled={submitDisabled}>
+          <button
+            className={`run-btn${isLoading ? " is-loading" : ""}`}
+            type="submit"
+            disabled={submitDisabled}
+          >
             {isLoading ? (
               <>
                 <span className="spinner" />

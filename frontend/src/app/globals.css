@@ -186,7 +186,7 @@ label.field {
   background: var(--surface-2);
   color: var(--text);
   font-size: 10px;
-  line-height: 1;
+  line-height: 1.4;
   letter-spacing: 0.04em;
   text-transform: none;
   font-weight: 400;
@@ -199,8 +199,7 @@ label.field {
   z-index: 2;
 }
 
-.field-label[data-hint]:hover::after,
-label.field:focus-within .field-label[data-hint]::after {
+.field-label[data-hint]:hover::after {
   opacity: 1;
   transform: translateY(0);
 }
@@ -268,6 +267,11 @@ select:focus {
   gap: 8px;
 }
 
+.toggle-grid--single {
+  grid-template-columns: 1fr;
+  margin-top: 12px;
+}
+
 .toggle-label {
   display: flex;
   align-items: center;
@@ -331,6 +335,12 @@ select:focus {
   opacity: 1;
 }
 
+.toggle-label:focus-within {
+  outline: 2px solid var(--accent-glow);
+  outline-offset: -2px;
+  border-color: var(--accent);
+}
+
 /* ── Run button ─────────────────────────────── */
 .run-btn {
   margin-top: 32px;
@@ -367,9 +377,13 @@ select:focus {
 
 .run-btn:disabled {
   opacity: 0.45;
-  cursor: progress;
+  cursor: not-allowed;
   box-shadow: none;
   transform: none;
+}
+
+.run-btn:disabled.is-loading {
+  cursor: progress;
 }
 
 .spinner {
