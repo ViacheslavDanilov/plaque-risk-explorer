@@ -318,11 +318,7 @@ export default function Home() {
     <main className="page-shell">
       <header className="site-header">
         <span className="header-tag">Cardiology · Risk Analysis</span>
-        <h1>
-          Plaque Risk
-          <br />
-          Explorer
-        </h1>
+        <h1>Plaque Risk Explorer</h1>
         <p className="header-sub">
           Estimate the probability of adverse cardiovascular outcomes using
           patient profile, cardiac function, comorbidities, and imaging
