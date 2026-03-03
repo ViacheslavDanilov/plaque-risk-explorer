@@ -5,11 +5,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Build tools required by statsforecast (autogluon transitive dep)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends g++ && \
-    rm -rf /var/lib/apt/lists/*
-
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
