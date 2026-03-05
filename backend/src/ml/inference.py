@@ -1,10 +1,27 @@
+import os
 from pathlib import Path
 
 import pandas as pd
 from autogluon.tabular import TabularPredictor
 from pandas.api.types import is_numeric_dtype
 
-from ml.train import FEATURES
+FEATURES = [
+    "gender",
+    "age",
+    "angina_functional_class",
+    "post_infarction_cardiosclerosis",
+    "multifocal_atherosclerosis",
+    "diabetes_mellitus",
+    "hypertension",
+    "cholesterol_level",
+    "bmi",
+    "lvef_percent",
+    "syntax_score",
+    "ffr",
+    "plaque_volume_percent",
+    "lumen_area",
+    "unstable_plaque",
+]
 
 _LABEL = "adverse_outcome"
 _DEFAULT_REFERENCE_PROFILE = {
@@ -98,10 +115,11 @@ def _build_reference_profile(baseline_df: pd.DataFrame) -> dict[str, object]:
 
 
 def load_predictor(model_dir: Path) -> tuple[TabularPredictor, dict[str, object]]:
-    target_dir = model_dir / _LABEL
+    model_name = os.getenv("MODEL_NAME", "tabpfn_adasyn")
+    target_dir = model_dir / model_name
     predictor = TabularPredictor.load(str(target_dir))
 
-    baseline_csv = target_dir / "baseline.csv"
+    baseline_csv = model_dir.parent / "data" / "features.csv"
     baseline_df = (
         pd.read_csv(baseline_csv)
         if baseline_csv.exists()
