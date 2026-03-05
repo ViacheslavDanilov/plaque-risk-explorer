@@ -36,8 +36,8 @@ class DataSampling:
 
     def check_intersection_with_original(self):
         """
-        Проверяет, есть ли пересечение между синтетическими и исходными строками (по всем признакам и target).
-        Возвращает количество и список пересечений (до 10 строк).
+        Check intersection between synthetic and original rows (across all features and target).
+        Returns the count and a list of intersecting rows (up to 10).
         """
         if self.x is None or self.y is None:
             raise ValueError("No resampled data available. Call resample_data() first.")
@@ -51,7 +51,7 @@ class DataSampling:
             axis=1,
         )
         synth_df = synth_df.astype(self.data_types.to_dict())
-        # Преобразуем в кортежи для сравнения
+        # Convert to tuples for comparison
         orig_set = {tuple(row) for row in orig_df.values}
         synth_set = {tuple(row) for row in synth_df.values}
         intersection = orig_set & synth_set
@@ -59,7 +59,7 @@ class DataSampling:
 
     def _fill_categorical_random(self, synth_df, orig_df, categorical_cols):
         """
-        Заполняет категориальные признаки в synth_df случайными значениями из orig_df.
+        Fill categorical features in synth_df with random values sampled from orig_df.
         """
         for col in categorical_cols:
             synth_df[col] = np.random.choice(
@@ -143,9 +143,9 @@ class DataSampling:
 
     def resample_data(self, n_target: int = 300, max_iter: int = 20):
         """
-        Генерирует уникальные синтетические строки, приводя типы к исходным, удаляя все совпадающие с оригиналом по значениям.
-        n_target: сколько уникальных синтетических строк нужно получить (по умолчанию 300)
-        max_iter: максимальное число попыток генерации (чтобы не зациклиться)
+        Generate unique synthetic rows, casting types to match originals and removing duplicates.
+        n_target: number of unique synthetic rows to generate (default 300)
+        max_iter: maximum generation attempts to avoid infinite loops
         """
         if self.sampler is None:
             raise ValueError(
@@ -166,7 +166,7 @@ class DataSampling:
         n_generated = 0
         iters = 0
 
-        # Определяем категориальные признаки
+        # Detect categorical features
         categorical_cols = [
             col
             for col in self.X.columns
@@ -182,12 +182,12 @@ class DataSampling:
         adasyn_with_cat = self.sampler_method == "adasyn" and len(categorical_cols) > 0
         if adasyn_with_cat:
             logger.warning(
-                "ADASYN не поддерживает категориальные признаки. Будет выполнено: 1) генерация только по числовым признакам, 2) заполнение категориальных случайными значениями из оригинального распределения. Итоговые строки могут быть менее реалистичны!",
+                "ADASYN does not support categorical features. Workaround: 1) generate using numeric features only, 2) fill categorical features with random values from the original distribution. Results may be less realistic.",
             )
 
         while n_generated < n_target and iters < max_iter:
             if adasyn_with_cat:
-                # Семплируем только по числовым
+                # Sample using numeric features only
                 x_num = self.X[numeric_cols]
                 min_class_size = self.Y.value_counts().min()
                 adj_k = min(5, min_class_size - 1)
@@ -202,7 +202,7 @@ class DataSampling:
                     n_neighbors=adj_k,
                 )
                 x_res, y_res = sampler_num.fit_resample(x_num, self.Y)
-                # Собираем датафрейм с числовыми + target
+                # Build dataframe with numeric columns + target
                 df_res = pd.concat(
                     [
                         pd.DataFrame(x_res, columns=numeric_cols),
@@ -210,12 +210,12 @@ class DataSampling:
                     ],
                     axis=1,
                 )
-                # Добавляем категориальные как NaN
+                # Add categorical columns as NaN
                 for col in categorical_cols:
                     df_res[col] = np.nan
-                # Приводим к нужному порядку
+                # Reorder columns to match original
                 df_res = df_res[synth_columns]
-                # Заполняем категориальные случайно
+                # Fill categorical features randomly
                 df_res = self._fill_categorical_random(
                     df_res,
                     orig_df,
@@ -223,7 +223,7 @@ class DataSampling:
                 )
                 df_res = df_res.astype(self.data_types.to_dict())
             else:
-                # Обычный путь (SMOTE/ADASYN без категориальных)
+                # Standard path (SMOTE/ADASYN without categorical features)
                 x_res, y_res = self.sampler.fit_resample(self.X, self.Y)
                 df_res = pd.concat(
                     [
@@ -233,7 +233,7 @@ class DataSampling:
                     axis=1,
                 )
                 df_res = df_res.astype(self.data_types.to_dict())
-            # Удаляем все строки, совпадающие с оригиналом и уже выбранными синтетическими
+            # Remove rows matching the original data or already selected synthetic rows
             synth_set = {tuple(row) for row in df_res.values}
             synth_set = synth_set - orig_set
             if unique_synth:
@@ -347,11 +347,11 @@ class DataSampling:
         if n_features == 1:
             axs = [axs]
         for i, feat in enumerate(features):
-            # Получаем значения для исходных и синтетических
+            # Get values for original and synthetic data
             real_vals = self.X[feat] if hasattr(self.X, "__getitem__") else None
             syn_vals = None
             if self.sampling_mode == "new":
-                # Только синтетические
+                # Synthetic only
                 if hasattr(self.sampler, "sample_indices_"):
                     orig_len = len(self.X)
                     synthetic_mask = [
@@ -394,7 +394,7 @@ class DataSampling:
 if __name__ == "__main__":
     # Settings for generating 300+ balanced UNIQUE synthetic records
     target_synthetic_total = 300  # Total unique synthetic samples
-    sampling_method = "adasyn"  # "smote" or "adasyn"; ADASYN не поддерживает категориальные признаки, используйте только для float/int
+    sampling_method = "adasyn"  # "smote" or "adasyn"; ADASYN does not support categorical features, use only for float/int
 
     dataloader = MyDataLoader(data_path="backend/data/features.csv")
     dataloader.load_data()
@@ -419,7 +419,7 @@ if __name__ == "__main__":
                     f"Feature '{col}' (index {i}) identified as categorical (nunique={nunique})",
                 )
 
-    # Для SMOTE: sampling_strategy как dict для балансировки классов
+    # For SMOTE: use dict sampling_strategy for class balancing
     sampling_strategy: str | dict = "auto"
     if sampling_method == "smote":
         n_classes = Y.nunique()
@@ -465,7 +465,7 @@ if __name__ == "__main__":
             f"Generated class distribution:\n{df_gen['adverse_outcome'].value_counts().to_dict()}",
         )
 
-        # Проверка пересечения синтетики и оригинала
+        # Check intersection between synthetic and original data
         n_inter, inter_rows = my_data_sampler.check_intersection_with_original()
         if n_inter == 0:
             logger.info(
