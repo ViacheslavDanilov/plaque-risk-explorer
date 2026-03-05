@@ -80,8 +80,8 @@
 ## Приложения
 
 # ADASYN
-- [leaderboard](models/tabpfnv2_model/adasyn/REALTABPFN-V2.5_20260305_170929_fold_5/leaderboard.xlsx)
-- [feature_importance](models/tabpfnv2_model/adasyn/REALTABPFN-V2.5_20260305_170929_feature_importance.xlsx)
+- [leaderboard](../models/tabpfn_adasyn/leaderboard.xlsx)
+- [feature_importance](../models/tabpfn_adasyn/feature_importance.xlsx)
 # SMOTE
-- [leaderboard](models/tabpfnv2_model/smote/REALTABPFN-V2.5_20260305_171055_fold_5/leaderboard.xlsx)
-- [feature_importance](models/tabpfnv2_model/smote/REALTABPFN-V2.5_20260305_171055_feature_importance.xlsx)
+- [leaderboard](../models/tabpfn_smote/leaderboard.xlsx)
+- [feature_importance](../models/tabpfn_smote/feature_importance.xlsx)
