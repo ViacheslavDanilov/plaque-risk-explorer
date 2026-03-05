@@ -1,2 +1,9 @@
 [tool.uv.workspace]
 members = ["backend"]
+
+[dependency-groups]
+dev = [
+    "imblearn>=0.0",
+    "openpyxl>=3.1.5",
+    "tabpfn>=6.4.1",
+]
