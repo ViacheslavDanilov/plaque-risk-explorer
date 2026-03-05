@@ -1,3 +1,5 @@
+import os
+
 from pathlib import Path
 
 import pandas as pd
@@ -98,13 +100,16 @@ def _build_reference_profile(baseline_df: pd.DataFrame) -> dict[str, object]:
 
 
 def load_predictor(model_dir: Path) -> tuple[TabularPredictor, dict[str, object]]:
-    target_dir = model_dir / _LABEL
+    # target_dir = model_dir / _LABEL
+    target_dir = f'{model_dir}/tabpfnv2_model/adasyn/REALTABPFN-V2.5_20260305_170929_fold_5'
     predictor = TabularPredictor.load(str(target_dir))
 
-    baseline_csv = target_dir / "baseline.csv"
+    # baseline_csv = target_dir / "baseline.csv"
+    baseline_csv = 'backend/data/baseline.csv'
     baseline_df = (
         pd.read_csv(baseline_csv)
-        if baseline_csv.exists()
+        # if baseline_csv.exists()
+        if os.path.exists(baseline_csv)
         else pd.DataFrame([_DEFAULT_REFERENCE_PROFILE])
     )
     return predictor, _build_reference_profile(baseline_df)
