@@ -1,6 +1,6 @@
 import logging
-import pandas as pd
 
+import pandas as pd
 from sklearn.impute import KNNImputer, SimpleImputer
 
 logging.basicConfig(
@@ -20,15 +20,19 @@ class MyDataLoader:
         self.data = pd.read_csv(self.data_path)
         self.data_types = self.data.dtypes
         logger.info(f"Data loaded from path: {self.data_path}")
-    
-    def impute_missing_values(self, n_neighbors: int = 3, target_column: str = "adverse_outcome"):
+
+    def impute_missing_values(
+        self,
+        n_neighbors: int = 3,
+        target_column: str = "adverse_outcome",
+    ):
         data_filled = self.data.copy()
 
         num_cols = data_filled.select_dtypes(include="number").columns.tolist()
         cat_cols = data_filled.select_dtypes(exclude="number").columns.tolist()
         if target_column in cat_cols:
             cat_cols.remove(target_column)
-        
+
         if num_cols:
             imputer_num = KNNImputer(n_neighbors=n_neighbors)
             data_filled[num_cols] = imputer_num.fit_transform(data_filled[num_cols])
@@ -41,11 +45,15 @@ class MyDataLoader:
 
     def get_data_features_and_target(self, target_column: str):
         if self.data is None:
-            raise ValueError("Data not loaded. Please call load_data() before getting features and target.")
-        
+            raise ValueError(
+                "Data not loaded. Please call load_data() before getting features and target.",
+            )
+
         X = self.data.drop(columns=[target_column])
         Y = self.data[target_column]
-        logger.info(f"Features and target extracted from data. Features shape: {X.shape}, Target shape: {Y.shape}")
+        logger.info(
+            f"Features and target extracted from data. Features shape: {X.shape}, Target shape: {Y.shape}",
+        )
         return X, Y
 
     def describe_target(self, target_column: str) -> pd.Series:
@@ -55,7 +63,9 @@ class MyDataLoader:
         Raises ``ValueError`` if data has not been loaded.
         """
         if self.data is None:
-            raise ValueError("Data not loaded. Please call load_data() before describing the target.")
+            raise ValueError(
+                "Data not loaded. Please call load_data() before describing the target.",
+            )
 
         if target_column not in self.data.columns:
             raise KeyError(f"Column '{target_column}' not found in data.")
@@ -69,7 +79,7 @@ class MyDataLoader:
             counts.to_string(),
         )
         return counts
-    
+
 
 if __name__ == "__main__":
     # Example usage

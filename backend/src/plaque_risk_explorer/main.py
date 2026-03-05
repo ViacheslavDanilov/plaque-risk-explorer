@@ -23,8 +23,7 @@ async def lifespan(app: FastAPI):
         app.state.predictor, app.state.reference_profile = load_predictor(_MODEL_DIR)
     except Exception as exc:
         raise RuntimeError(
-            f"Failed to load model from {_MODEL_DIR}. "
-            "Run `python -m pipelines.train` first.",
+            f"Failed to load model from {_MODEL_DIR}. Run the training pipeline first.",
         ) from exc
     yield
 

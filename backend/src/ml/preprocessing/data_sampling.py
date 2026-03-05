@@ -1,11 +1,11 @@
 import logging
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from imblearn.under_sampling import RandomUnderSampler
-from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN, SMOTENC
-
 from data_loader import MyDataLoader
+from imblearn.over_sampling import ADASYN, SMOTE, SMOTENC, RandomOverSampler
+from imblearn.under_sampling import RandomUnderSampler
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,9 +41,15 @@ class DataSampling:
         """
         if self.x is None or self.y is None:
             raise ValueError("No resampled data available. Call resample_data() first.")
-        orig_df = pd.concat([self.X.reset_index(drop=True), self.Y.reset_index(drop=True)], axis=1)
+        orig_df = pd.concat(
+            [self.X.reset_index(drop=True), self.Y.reset_index(drop=True)],
+            axis=1,
+        )
         orig_df = orig_df.astype(self.data_types.to_dict())
-        synth_df = pd.concat([self.x.reset_index(drop=True), self.y.reset_index(drop=True)], axis=1)
+        synth_df = pd.concat(
+            [self.x.reset_index(drop=True), self.y.reset_index(drop=True)],
+            axis=1,
+        )
         synth_df = synth_df.astype(self.data_types.to_dict())
         # Преобразуем в кортежи для сравнения
         orig_set = set(tuple(row) for row in orig_df.values)
@@ -56,10 +62,19 @@ class DataSampling:
         Заполняет категориальные признаки в synth_df случайными значениями из orig_df.
         """
         for col in categorical_cols:
-            synth_df[col] = np.random.choice(orig_df[col].dropna().values, size=len(synth_df))
+            synth_df[col] = np.random.choice(
+                orig_df[col].dropna().values,
+                size=len(synth_df),
+            )
         return synth_df
 
-    def get_sampler(self, method: str = "under", sampling_strategy: str = "not minority", categorical_features=None, k_neighbors: int = 5):
+    def get_sampler(
+        self,
+        method: str = "under",
+        sampling_strategy: str = "not minority",
+        categorical_features=None,
+        k_neighbors: int = 5,
+    ):
         """
         Initialize the sampler object based on the specified method and strategy.
         Args:
@@ -71,33 +86,58 @@ class DataSampling:
         self.sampler_method = method
         match method:
             case "under":
-                self.sampler = RandomUnderSampler(sampling_strategy=sampling_strategy, random_state=42)
-                logger.info(f"RandomUnderSampler initialized with sampling_strategy='{sampling_strategy}'")
+                self.sampler = RandomUnderSampler(
+                    sampling_strategy=sampling_strategy,
+                    random_state=42,
+                )
+                logger.info(
+                    f"RandomUnderSampler initialized with sampling_strategy='{sampling_strategy}'",
+                )
             case "over":
-                self.sampler = RandomOverSampler(sampling_strategy=sampling_strategy, random_state=42)
-                logger.info(f"RandomOverSampler initialized with sampling_strategy='{sampling_strategy}'")
+                self.sampler = RandomOverSampler(
+                    sampling_strategy=sampling_strategy,
+                    random_state=42,
+                )
+                logger.info(
+                    f"RandomOverSampler initialized with sampling_strategy='{sampling_strategy}'",
+                )
             case "smote":
                 # Ensure k_neighbors is compatible with the number of samples in minority class
                 min_class_size = self.Y.value_counts().min()
                 adj_k = min(k_neighbors, min_class_size - 1)
                 if adj_k < 1:
                     adj_k = 1
-                    logger.warning(f"Class size {min_class_size} is too small. Setting k_neighbors to 1.")
-                
+                    logger.warning(
+                        f"Class size {min_class_size} is too small. Setting k_neighbors to 1.",
+                    )
+
                 if categorical_features is not None and len(categorical_features) > 0:
                     self.sampler = SMOTENC(
                         categorical_features=categorical_features,
                         sampling_strategy=sampling_strategy,
                         random_state=42,
-                        k_neighbors=adj_k
+                        k_neighbors=adj_k,
                     )
-                    logger.info(f"SMOTENC initialized with categorical_features={categorical_features}, k_neighbors={adj_k} and sampling_strategy='{sampling_strategy}'")
+                    logger.info(
+                        f"SMOTENC initialized with categorical_features={categorical_features}, k_neighbors={adj_k} and sampling_strategy='{sampling_strategy}'",
+                    )
                 else:
-                    self.sampler = SMOTE(sampling_strategy=sampling_strategy, random_state=42, k_neighbors=adj_k)
-                    logger.info(f"SMOTE initialized with k_neighbors={adj_k} and sampling_strategy='{sampling_strategy}'")
+                    self.sampler = SMOTE(
+                        sampling_strategy=sampling_strategy,
+                        random_state=42,
+                        k_neighbors=adj_k,
+                    )
+                    logger.info(
+                        f"SMOTE initialized with k_neighbors={adj_k} and sampling_strategy='{sampling_strategy}'",
+                    )
             case "adasyn":
-                self.sampler = ADASYN(sampling_strategy=sampling_strategy, random_state=42)
-                logger.info(f"ADASYN initialized with sampling_strategy='{sampling_strategy}'")
+                self.sampler = ADASYN(
+                    sampling_strategy=sampling_strategy,
+                    random_state=42,
+                )
+                logger.info(
+                    f"ADASYN initialized with sampling_strategy='{sampling_strategy}'",
+                )
             case _:
                 raise ValueError(f"Unsupported sampling method: {method}")
 
@@ -108,24 +148,42 @@ class DataSampling:
         max_iter: максимальное число попыток генерации (чтобы не зациклиться)
         """
         if self.sampler is None:
-            raise ValueError("Sampler not set. Please call get_sampler() to set the sampling method before plotting.")
+            raise ValueError(
+                "Sampler not set. Please call get_sampler() to set the sampling method before plotting.",
+            )
 
-        orig_df = pd.concat([self.X.reset_index(drop=True), self.Y.reset_index(drop=True)], axis=1)
+        orig_df = pd.concat(
+            [self.X.reset_index(drop=True), self.Y.reset_index(drop=True)],
+            axis=1,
+        )
         orig_df = orig_df.astype(self.data_types.to_dict())
         orig_set = set(tuple(row) for row in orig_df.values)
 
         unique_synth = []
-        synth_columns = list(self.X.columns) + [self.Y.name if self.Y.name else 'target']
+        synth_columns = list(self.X.columns) + [
+            self.Y.name if self.Y.name else "target",
+        ]
         n_generated = 0
         iters = 0
 
         # Определяем категориальные признаки
-        categorical_cols = [col for col in self.X.columns if str(self.data_types[col]).startswith('category') or str(self.data_types[col]) == 'object' or (str(self.data_types[col]).startswith('int') and self.X[col].nunique() <= 4)]
+        categorical_cols = [
+            col
+            for col in self.X.columns
+            if str(self.data_types[col]).startswith("category")
+            or str(self.data_types[col]) == "object"
+            or (
+                str(self.data_types[col]).startswith("int")
+                and self.X[col].nunique() <= 4
+            )
+        ]
         numeric_cols = [col for col in self.X.columns if col not in categorical_cols]
 
-        adasyn_with_cat = self.sampler_method == 'adasyn' and len(categorical_cols) > 0
+        adasyn_with_cat = self.sampler_method == "adasyn" and len(categorical_cols) > 0
         if adasyn_with_cat:
-            logger.warning("ADASYN не поддерживает категориальные признаки. Будет выполнено: 1) генерация только по числовым признакам, 2) заполнение категориальных случайными значениями из оригинального распределения. Итоговые строки могут быть менее реалистичны!")
+            logger.warning(
+                "ADASYN не поддерживает категориальные признаки. Будет выполнено: 1) генерация только по числовым признакам, 2) заполнение категориальных случайными значениями из оригинального распределения. Итоговые строки могут быть менее реалистичны!",
+            )
 
         while n_generated < n_target and iters < max_iter:
             if adasyn_with_cat:
@@ -135,23 +193,45 @@ class DataSampling:
                 adj_k = min(5, min_class_size - 1)
                 if adj_k < 1:
                     adj_k = 1
-                    logger.warning(f"Class size {min_class_size} is too small. Setting k_neighbors to 1.")
-                sampler_num = ADASYN(sampling_strategy='auto', random_state=42, n_neighbors=adj_k)
+                    logger.warning(
+                        f"Class size {min_class_size} is too small. Setting k_neighbors to 1.",
+                    )
+                sampler_num = ADASYN(
+                    sampling_strategy="auto",
+                    random_state=42,
+                    n_neighbors=adj_k,
+                )
                 x_res, y_res = sampler_num.fit_resample(x_num, self.Y)
                 # Собираем датафрейм с числовыми + target
-                df_res = pd.concat([pd.DataFrame(x_res, columns=numeric_cols), pd.Series(y_res, name=self.Y.name)], axis=1)
+                df_res = pd.concat(
+                    [
+                        pd.DataFrame(x_res, columns=numeric_cols),
+                        pd.Series(y_res, name=self.Y.name),
+                    ],
+                    axis=1,
+                )
                 # Добавляем категориальные как NaN
                 for col in categorical_cols:
                     df_res[col] = np.nan
                 # Приводим к нужному порядку
                 df_res = df_res[synth_columns]
                 # Заполняем категориальные случайно
-                df_res = self._fill_categorical_random(df_res, orig_df, categorical_cols)
+                df_res = self._fill_categorical_random(
+                    df_res,
+                    orig_df,
+                    categorical_cols,
+                )
                 df_res = df_res.astype(self.data_types.to_dict())
             else:
                 # Обычный путь (SMOTE/ADASYN без категориальных)
                 x_res, y_res = self.sampler.fit_resample(self.X, self.Y)
-                df_res = pd.concat([pd.DataFrame(x_res, columns=self.X.columns), pd.Series(y_res, name=self.Y.name)], axis=1)
+                df_res = pd.concat(
+                    [
+                        pd.DataFrame(x_res, columns=self.X.columns),
+                        pd.Series(y_res, name=self.Y.name),
+                    ],
+                    axis=1,
+                )
                 df_res = df_res.astype(self.data_types.to_dict())
             # Удаляем все строки, совпадающие с оригиналом и уже выбранными синтетическими
             synth_set = set(tuple(row) for row in df_res.values)
@@ -165,12 +245,16 @@ class DataSampling:
                 if n_generated >= n_target:
                     break
             iters += 1
-            logger.info(f"Iteration {iters}: total unique synthetic rows = {n_generated}")
+            logger.info(
+                f"Iteration {iters}: total unique synthetic rows = {n_generated}",
+            )
         if n_generated < n_target:
-            logger.warning(f"Could not generate requested {n_target} unique synthetic rows, got only {n_generated}")
+            logger.warning(
+                f"Could not generate requested {n_target} unique synthetic rows, got only {n_generated}",
+            )
         synth_df = pd.DataFrame(unique_synth, columns=synth_columns)
-        self.x = synth_df.drop(columns=[self.Y.name if self.Y.name else 'target'])
-        self.y = synth_df[self.Y.name if self.Y.name else 'target']
+        self.x = synth_df.drop(columns=[self.Y.name if self.Y.name else "target"])
+        self.y = synth_df[self.Y.name if self.Y.name else "target"]
         logger.info(f"Final unique synthetic shape: {self.x.shape}, {self.y.shape}")
 
     def export_csv(self, path: str, include_index: bool = False, val_round: int = None):
@@ -184,15 +268,31 @@ class DataSampling:
         if self.x is None or self.y is None:
             raise ValueError("No resampled data available. Call resample_data() first.")
 
-        df = pd.concat([pd.DataFrame(self.x), pd.Series(self.y, name=self.y.name if self.y.name else "adverse_outcome")], axis=1)
+        df = pd.concat(
+            [
+                pd.DataFrame(self.x),
+                pd.Series(
+                    self.y,
+                    name=self.y.name if self.y.name else "adverse_outcome",
+                ),
+            ],
+            axis=1,
+        )
         if val_round is not None:
-            float_cols = df.select_dtypes(include=['float']).columns
+            float_cols = df.select_dtypes(include=["float"]).columns
             df[float_cols] = df[float_cols].round(val_round)
         df = df.astype(self.data_types.to_dict())
         df.to_csv(path, index=include_index)
-        logger.info(f"Data exported to '{path}', rows={len(df)}, include_index={include_index}")
+        logger.info(
+            f"Data exported to '{path}', rows={len(df)}, include_index={include_index}",
+        )
 
-    def data_plot(self, ncols: int = 2, figsize: tuple = (12, 6), autopct: str = "%1.1f%%"):
+    def data_plot(
+        self,
+        ncols: int = 2,
+        figsize: tuple = (12, 6),
+        autopct: str = "%1.1f%%",
+    ):
         """
         Plot pie charts of target distribution before and after sampling.
         Args:
@@ -206,15 +306,17 @@ class DataSampling:
             fig, axs = plt.subplots(ncols=ncols, figsize=figsize)
             y_source = self.Y
             y_res = self.y
-            
+
             y_source.value_counts().plot.pie(autopct=autopct, ax=axs[0])
-            axs[0].set_title(f"Original data")
+            axs[0].set_title("Original data")
             y_res.value_counts().plot.pie(autopct=autopct, ax=axs[1])
             axs[1].set_title(f"{self.sampler_method}-sampling")
             return fig, axs
         else:
-            raise ValueError("Sampler not set. Please call get_sampler() to set the sampling method before plotting.")
-        
+            raise ValueError(
+                "Sampler not set. Please call get_sampler() to set the sampling method before plotting.",
+            )
+
     def synthetic_comparison_plot(self, features=None, figsize=(12, 8)):
         """
         Plot overlay histograms comparing feature distributions between real and synthetic data.
@@ -227,30 +329,55 @@ class DataSampling:
             fig, axs: Matplotlib figure and axes objects.
         """
         if features is None:
-            features = ["age", "cholesterol_level", "syntax_score", "angina_functional_class", "lumen_area", "unstable_plaque"]
+            features = [
+                "age",
+                "cholesterol_level",
+                "syntax_score",
+                "angina_functional_class",
+                "lumen_area",
+                "unstable_plaque",
+            ]
         n_features = len(features)
         fig, axs = plt.subplots(n_features, 1, figsize=figsize)
         if n_features == 1:
             axs = [axs]
         for i, feat in enumerate(features):
             # Получаем значения для исходных и синтетических
-            real_vals = self.X[feat] if hasattr(self.X, '__getitem__') else None
+            real_vals = self.X[feat] if hasattr(self.X, "__getitem__") else None
             syn_vals = None
             if self.sampling_mode == "new":
                 # Только синтетические
-                if hasattr(self.sampler, 'sample_indices_'):
+                if hasattr(self.sampler, "sample_indices_"):
                     orig_len = len(self.X)
-                    synthetic_mask = [idx for idx in self.sampler.sample_indices_ if idx >= orig_len]
-                    syn_vals = self.x.iloc[synthetic_mask][feat] if hasattr(self.x, 'iloc') else self.x[synthetic_mask, self.x.columns.get_loc(feat)]
+                    synthetic_mask = [
+                        idx for idx in self.sampler.sample_indices_ if idx >= orig_len
+                    ]
+                    syn_vals = (
+                        self.x.iloc[synthetic_mask][feat]
+                        if hasattr(self.x, "iloc")
+                        else self.x[synthetic_mask, self.x.columns.get_loc(feat)]
+                    )
                 else:
-                    syn_vals = self.x[feat] if hasattr(self.x, '__getitem__') else None
+                    syn_vals = self.x[feat] if hasattr(self.x, "__getitem__") else None
                 axs[i].hist(real_vals, bins=20, alpha=0.5, label="Real", color="blue")
-                axs[i].hist(syn_vals, bins=20, alpha=0.5, label="Synthetic", color="orange")
+                axs[i].hist(
+                    syn_vals,
+                    bins=20,
+                    alpha=0.5,
+                    label="Synthetic",
+                    color="orange",
+                )
                 axs[i].set_title(f"{feat}: Real vs Synthetic (new mode)")
             else:
-                syn_vals = self.x[feat] if hasattr(self.x, '__getitem__') else None
+                syn_vals = self.x[feat] if hasattr(self.x, "__getitem__") else None
                 axs[i].hist(real_vals, bins=20, alpha=0.5, label="Real", color="blue")
-                axs[i].hist(syn_vals, bins=20, alpha=0.5, label="Resampled", color="green")
+                axs[i].hist(
+                    syn_vals,
+                    bins=20,
+                    alpha=0.5,
+                    label="Resampled",
+                    color="green",
+                )
                 axs[i].set_title(f"{feat}: Real vs Resampled (append mode)")
             axs[i].legend()
             axs[i].set_xlabel(feat)
@@ -277,39 +404,43 @@ if __name__ == "__main__":
             dt = X[col].dtype
             nunique = X[col].nunique()
             # Object/Category types or Binary/Ordinal columns with few unique values
-            if dt == 'object' or str(dt).startswith('category') or (str(dt).startswith('int') and nunique <= 4):
+            if (
+                dt == "object"
+                or str(dt).startswith("category")
+                or (str(dt).startswith("int") and nunique <= 4)
+            ):
                 categorical_features.append(i)
-                logger.info(f"Feature '{col}' (index {i}) identified as categorical (nunique={nunique})")
-
+                logger.info(
+                    f"Feature '{col}' (index {i}) identified as categorical (nunique={nunique})",
+                )
 
     # Для SMOTE: sampling_strategy как dict для балансировки классов
     if sampling_method == "smote":
         n_classes = Y.nunique()
         n_per_class = target_synthetic_total // n_classes
         unique_classes = list(Y.unique())
-        sampling_strategy = {cls: n_per_class for cls in unique_classes}
+        sampling_strategy = dict.fromkeys(unique_classes, n_per_class)
     else:
-        sampling_strategy = 'auto'
+        sampling_strategy = "auto"
 
     my_data_sampler = DataSampling(
-        X = X,
-        Y = Y,
+        X=X,
+        Y=Y,
         data_types=dataloader.data_types,
-        sampling_mode = "new"  # ONLY synthetic
+        sampling_mode="new",  # ONLY synthetic
     )
 
     my_data_sampler.get_sampler(
         method=sampling_method,
         sampling_strategy=sampling_strategy,
         categorical_features=categorical_features,
-        k_neighbors=5
+        k_neighbors=5,
     )
 
     my_data_sampler.resample_data(n_target=target_synthetic_total)
 
     output_path = f"backend/data/resampled_data_{sampling_method}.csv"
     my_data_sampler.export_csv(path=output_path, include_index=False, val_round=2)
-
 
     # Validation and Plotting
     if my_data_sampler.x is not None:
@@ -326,11 +457,17 @@ if __name__ == "__main__":
         # Verify the file content
         df_gen = pd.read_csv(output_path)
         logger.info(f"Generated file rows: {len(df_gen)}")
-        logger.info(f"Generated class distribution:\n{df_gen['adverse_outcome'].value_counts().to_dict()}")
+        logger.info(
+            f"Generated class distribution:\n{df_gen['adverse_outcome'].value_counts().to_dict()}",
+        )
 
         # Проверка пересечения синтетики и оригинала
         n_inter, inter_rows = my_data_sampler.check_intersection_with_original()
         if n_inter == 0:
-            logger.info("No intersection between synthetic and original datasets. All synthetic rows are unique.")
+            logger.info(
+                "No intersection between synthetic and original datasets. All synthetic rows are unique.",
+            )
         else:
-            logger.warning(f"Intersection found! {n_inter} synthetic rows are present in the original dataset. Example(s): {inter_rows}")
+            logger.warning(
+                f"Intersection found! {n_inter} synthetic rows are present in the original dataset. Example(s): {inter_rows}",
+            )

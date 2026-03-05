@@ -5,7 +5,23 @@ import pandas as pd
 from autogluon.tabular import TabularPredictor
 from pandas.api.types import is_numeric_dtype
 
-from ml.train import FEATURES
+FEATURES = [
+    "gender",
+    "age",
+    "angina_functional_class",
+    "post_infarction_cardiosclerosis",
+    "multifocal_atherosclerosis",
+    "diabetes_mellitus",
+    "hypertension",
+    "cholesterol_level",
+    "bmi",
+    "lvef_percent",
+    "syntax_score",
+    "ffr",
+    "plaque_volume_percent",
+    "lumen_area",
+    "unstable_plaque",
+]
 
 _LABEL = "adverse_outcome"
 _DEFAULT_REFERENCE_PROFILE = {
