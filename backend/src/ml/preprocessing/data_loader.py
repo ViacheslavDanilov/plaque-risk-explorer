@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 class MyDataLoader:
     def __init__(self, data_path: str):
         self.data_path = data_path
-        self.data = None
+        self.data: pd.DataFrame | None = None
+        self.data_types: pd.Series | None = None
 
     def load_data(self):
         # Implement your data loading logic here
@@ -26,6 +27,8 @@ class MyDataLoader:
         n_neighbors: int = 3,
         target_column: str = "adverse_outcome",
     ):
+        if self.data is None:
+            raise ValueError("Data not loaded. Please call load_data() first.")
         data_filled = self.data.copy()
 
         num_cols = data_filled.select_dtypes(include="number").columns.tolist()

@@ -18,7 +18,6 @@ file_handler.setLevel(logging.INFO)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-logger.setFormatter(log_formatter)
 logger.addHandler(file_handler)
 
 
@@ -26,10 +25,10 @@ class AdverseOutcomeModel:
     """Placeholder: class for loading and using the adverse outcome model."""
 
     def __init__(self, model_name="REALTABPFN-V2.5", data_synthetic_method="adasyn"):
-        self.tabpfnv2_predictor = None
+        self.tabpfnv2_predictor: TabularPredictor | None = None
         self.loo = LeaveOneOut()
-        self.train_data = None
-        self.test_data = None
+        self.train_data: TabularDataset | None = None
+        self.test_data: TabularDataset | None = None
         self.model_name = model_name
         self.data_synthetic_method = data_synthetic_method
         self.model_path = f"backend/models/tabpfn_{self.data_synthetic_method}/{self.model_name}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -63,6 +62,9 @@ class AdverseOutcomeModel:
         Collects predictions for all samples in each fold for reliable metrics.
         """
         logger.info(f"Starting {n_splits}-fold Stratified CV...")
+
+        if self.train_data is None or self.test_data is None:
+            raise ValueError("Data not loaded. Call convert_datset() first.")
 
         X = self.train_data.drop(columns=[target_column])
         y = self.train_data[target_column]
@@ -105,6 +107,7 @@ class AdverseOutcomeModel:
         logger.info("StratifiedKFold finished. Final Cross-Validation Evaluation:")
         self.evaluate_metrics(true, preds)
 
+        assert self.tabpfnv2_predictor is not None
         leaderboard = self.tabpfnv2_predictor.leaderboard(self.test_data, silent=False)
         leaderboard.to_excel(
             f"{self.model_path}_fold_{n_splits}/leaderboard.xlsx",
@@ -131,12 +134,14 @@ if __name__ == "__main__":
     )
     my_data_loader.load_data()
     my_data_loader.impute_missing_values(n_neighbors=3)
+    assert my_data_loader.data is not None
     train_data = my_data_loader.data
 
     # 2. Load Real Test Data
     my_data_loader = MyDataLoader(data_path="backend/data/features.csv")
     my_data_loader.load_data()
     my_data_loader.impute_missing_values(n_neighbors=3)
+    assert my_data_loader.data is not None
     test_data = my_data_loader.data
 
     # 3. Initialize Model
@@ -152,6 +157,7 @@ if __name__ == "__main__":
     # 5. Final Evaluation on Real Data
     logger.info("Performing Final Evaluation on REAL data (features.csv)...")
 
+    assert adverse_outcome_model.tabpfnv2_predictor is not None
     # Check class distribution
     counts = test_data["adverse_outcome"].value_counts()
     logger.info(f"Test Set Class Distribution:\n{counts}")

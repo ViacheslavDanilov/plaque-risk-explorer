@@ -31,7 +31,7 @@ class DataSampling:
         self.y = None
         self.data_types = data_types
         self.sampler = None
-        self.sampler_method = None
+        self.sampler_method: str | None = None
         self.sampling_mode = sampling_mode  # 'append' (default) or 'new'
 
     def check_intersection_with_original(self):
@@ -52,8 +52,8 @@ class DataSampling:
         )
         synth_df = synth_df.astype(self.data_types.to_dict())
         # Преобразуем в кортежи для сравнения
-        orig_set = set(tuple(row) for row in orig_df.values)
-        synth_set = set(tuple(row) for row in synth_df.values)
+        orig_set = {tuple(row) for row in orig_df.values}
+        synth_set = {tuple(row) for row in synth_df.values}
         intersection = orig_set & synth_set
         return len(intersection), list(intersection)[:10]
 
@@ -71,7 +71,7 @@ class DataSampling:
     def get_sampler(
         self,
         method: str = "under",
-        sampling_strategy: str = "not minority",
+        sampling_strategy: str | dict = "not minority",
         categorical_features=None,
         k_neighbors: int = 5,
     ):
@@ -157,7 +157,7 @@ class DataSampling:
             axis=1,
         )
         orig_df = orig_df.astype(self.data_types.to_dict())
-        orig_set = set(tuple(row) for row in orig_df.values)
+        orig_set = {tuple(row) for row in orig_df.values}
 
         unique_synth = []
         synth_columns = list(self.X.columns) + [
@@ -234,10 +234,10 @@ class DataSampling:
                 )
                 df_res = df_res.astype(self.data_types.to_dict())
             # Удаляем все строки, совпадающие с оригиналом и уже выбранными синтетическими
-            synth_set = set(tuple(row) for row in df_res.values)
+            synth_set = {tuple(row) for row in df_res.values}
             synth_set = synth_set - orig_set
             if unique_synth:
-                prev_set = set(tuple(row) for row in unique_synth)
+                prev_set = {tuple(row) for row in unique_synth}
                 synth_set = synth_set - prev_set
             for row in synth_set:
                 unique_synth.append(row)
@@ -257,7 +257,12 @@ class DataSampling:
         self.y = synth_df[self.Y.name if self.Y.name else "target"]
         logger.info(f"Final unique synthetic shape: {self.x.shape}, {self.y.shape}")
 
-    def export_csv(self, path: str, include_index: bool = False, val_round: int = None):
+    def export_csv(
+        self,
+        path: str,
+        include_index: bool = False,
+        val_round: int | None = None,
+    ):
         """
         Export the synthetic dataset to a CSV file.
         Args:
@@ -415,13 +420,12 @@ if __name__ == "__main__":
                 )
 
     # Для SMOTE: sampling_strategy как dict для балансировки классов
+    sampling_strategy: str | dict = "auto"
     if sampling_method == "smote":
         n_classes = Y.nunique()
         n_per_class = target_synthetic_total // n_classes
         unique_classes = list(Y.unique())
         sampling_strategy = dict.fromkeys(unique_classes, n_per_class)
-    else:
-        sampling_strategy = "auto"
 
     my_data_sampler = DataSampling(
         X=X,
