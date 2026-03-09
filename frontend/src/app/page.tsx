@@ -283,23 +283,9 @@ export default function Home() {
 
     const baseline = result.explanation.baseline_probability;
     const target = result.adverse_outcome.probability;
-    const selected = [...result.explanation.feature_effects.slice(0, 6)];
-    const selectedTotal = selected.reduce(
-      (sum, effect) => sum + effect.effect,
-      0,
+    const selected = result.explanation.feature_effects.filter(
+      (e) => Math.abs(e.effect) > 0.0001,
     );
-    const residual = target - baseline - selectedTotal;
-
-    if (Math.abs(residual) > 0.0001) {
-      selected.push({
-        feature: "other_factors",
-        effect: residual,
-        direction:
-          residual > 0 ? "increase" : residual < 0 ? "decrease" : "neutral",
-        patient_value: null,
-        reference_value: null,
-      });
-    }
 
     const deltaToFinal = target - baseline;
     const maxAbs = Math.max(
@@ -736,14 +722,12 @@ export default function Home() {
                             />
                           </div>
 
-                          {segment.feature !== "other_factors" && (
-                            <div className="waterfall-values">
-                              patient{" "}
-                              {formatFeatureValue(segment.patient_value)} ·
-                              baseline{" "}
-                              {formatFeatureValue(segment.reference_value)}
-                            </div>
-                          )}
+                          <div className="waterfall-values">
+                            patient{" "}
+                            {formatFeatureValue(segment.patient_value)} ·
+                            baseline{" "}
+                            {formatFeatureValue(segment.reference_value)}
+                          </div>
                         </li>
                       ))}
                     </ul>
