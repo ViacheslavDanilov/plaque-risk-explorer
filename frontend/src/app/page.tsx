@@ -284,7 +284,7 @@ export default function Home() {
     const baseline = result.explanation.baseline_probability;
     const target = result.adverse_outcome.probability;
     const selected = result.explanation.feature_effects.filter(
-      (e) => Math.abs(e.effect) > 0.0001,
+      (e) => Math.abs(e.effect) >= 0.001,
     );
 
     const deltaToFinal = target - baseline;
