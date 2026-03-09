@@ -20,6 +20,7 @@ RUN uv sync --no-dev --no-install-project
 # Copy application code
 COPY src/ src/
 COPY models/ models/
+COPY data/features.csv data/features.csv
 
 # Install the project itself
 RUN uv sync --no-dev
