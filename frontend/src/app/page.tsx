@@ -723,9 +723,8 @@ export default function Home() {
                           </div>
 
                           <div className="waterfall-values">
-                            patient{" "}
-                            {formatFeatureValue(segment.patient_value)} ·
-                            baseline{" "}
+                            patient {formatFeatureValue(segment.patient_value)}{" "}
+                            · baseline{" "}
                             {formatFeatureValue(segment.reference_value)}
                           </div>
                         </li>
