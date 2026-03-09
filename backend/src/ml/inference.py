@@ -67,22 +67,25 @@ def _serialize(value: object) -> str | float | int | bool | None:
     return str(value)
 
 
-def _positive_class_probability(
-    predictor: TabularPredictor,
-    row: dict[str, object],
-) -> float:
-    frame = pd.DataFrame([row], columns=FEATURES)
-    probabilities = predictor.predict_proba(frame)
-
+def _extract_positive_proba(probabilities: pd.DataFrame | pd.Series) -> list[float]:
     if isinstance(probabilities, pd.Series):
-        return float(probabilities.iloc[0])
+        return [float(v) for v in probabilities]
     if 1 in probabilities.columns:
-        return float(probabilities[1].iloc[0])
+        return [float(v) for v in probabilities[1]]
     if "1" in probabilities.columns:
-        return float(probabilities["1"].iloc[0])
+        return [float(v) for v in probabilities["1"]]
     if len(probabilities.columns) < 2:
         raise RuntimeError("predict_proba did not return a positive-class column.")
-    return float(probabilities.iloc[0, 1])
+    return [float(v) for v in probabilities.iloc[:, 1]]
+
+
+def _batch_predict_proba(
+    predictor: TabularPredictor,
+    rows: list[dict[str, object]],
+) -> list[float]:
+    frame = pd.DataFrame(rows, columns=FEATURES)
+    probabilities = predictor.predict_proba(frame)
+    return _extract_positive_proba(probabilities)
 
 
 def _build_reference_profile(baseline_df: pd.DataFrame) -> dict[str, object]:
@@ -134,18 +137,24 @@ def predict(
     features: dict[str, object],
 ) -> tuple[float, int, dict[str, object]]:
     patient_profile = {feature: features.get(feature) for feature in FEATURES}
-    probability = _positive_class_probability(predictor, patient_profile)
-    baseline_probability = _positive_class_probability(predictor, reference_profile)
+
+    # Build all rows in one batch: patient, baseline, + 15 counterfactuals
+    rows: list[dict[str, object]] = [patient_profile, dict(reference_profile)]
+    for feature in FEATURES:
+        counterfactual = dict(patient_profile)
+        counterfactual[feature] = reference_profile.get(feature)
+        rows.append(counterfactual)
+
+    # Single predict_proba call for all 17 rows
+    all_proba = _batch_predict_proba(predictor, rows)
+
+    probability = all_proba[0]
+    baseline_probability = all_proba[1]
+    counterfactual_probas = all_proba[2:]
 
     scored_effects: list[tuple[float, dict[str, object]]] = []
-    for feature in FEATURES:
-        counterfactual_profile = dict(patient_profile)
-        counterfactual_profile[feature] = reference_profile.get(feature)
-        counterfactual_probability = _positive_class_probability(
-            predictor,
-            counterfactual_profile,
-        )
-        effect = round(probability - counterfactual_probability, 4)
+    for i, feature in enumerate(FEATURES):
+        effect = round(probability - counterfactual_probas[i], 4)
 
         direction = "neutral"
         if effect > 0:
