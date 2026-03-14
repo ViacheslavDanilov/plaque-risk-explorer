@@ -24,12 +24,12 @@
   --accent-glow: rgba(26, 43, 60, 0.1);
 
   /* Status — muted, professional */
-  --low: #3a9e7a;
-  --low-dim: rgba(58, 158, 122, 0.08);
+  --low: #2ba86e;
+  --low-dim: rgba(43, 168, 110, 0.08);
   --moderate: #c28b2d;
   --moderate-dim: rgba(194, 139, 45, 0.08);
-  --high: #c0544f;
-  --high-dim: rgba(192, 84, 79, 0.08);
+  --high: #eb3232;
+  --high-dim: rgba(235, 50, 50, 0.08);
 
   /* Elevation — layered shadow system */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -806,13 +806,13 @@ select:focus {
 }
 
 .waterfall-increase {
-  background: rgba(192, 84, 79, 0.5);
+  background: rgba(235, 50, 50, 0.65);
   border-top-right-radius: 999px;
   border-bottom-right-radius: 999px;
 }
 
 .waterfall-decrease {
-  background: rgba(58, 158, 122, 0.45);
+  background: rgba(58, 158, 122, 0.75);
   border-top-left-radius: 999px;
   border-bottom-left-radius: 999px;
 }
@@ -943,7 +943,7 @@ select:focus {
   margin-top: 20px;
   padding: 12px 16px;
   background: var(--high-dim);
-  border: 1px solid rgba(192, 84, 79, 0.2);
+  border: 1px solid rgba(235, 50, 50, 0.32);
   border-radius: var(--radius-sm);
   font-size: 12px;
   color: var(--high);
