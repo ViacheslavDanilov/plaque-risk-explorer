@@ -16,7 +16,7 @@
   --text: #2c3338;
   --text-strong: #0f1419;
   --muted: #6b7b8d;
-  --muted-2: #9aa8b5;
+  --muted-2: #8a96a3;
 
   /* Accent — deep slate-blue, professional */
   --accent: #1a2b3c;
@@ -156,7 +156,7 @@ h1 {
   content: "";
   flex: 1;
   height: 1px;
-  background: var(--border);
+  background: var(--border-hi);
   align-self: center;
 }
 
@@ -194,9 +194,6 @@ label.field {
   position: relative;
   width: fit-content;
   cursor: help;
-  text-decoration: underline dotted var(--muted-2);
-  text-underline-offset: 3px;
-  text-decoration-thickness: 1px;
 }
 
 .field-label[data-hint]::after {
@@ -507,7 +504,7 @@ select:focus {
   content: "";
   flex: 1;
   height: 1px;
-  background: var(--border);
+  background: var(--border-hi);
   align-self: center;
 }
 
@@ -692,8 +689,17 @@ select:focus {
   color: var(--text);
   background: var(--surface-2);
   border: 1px solid var(--border);
+  border-left: 3px solid var(--border-hi);
   border-radius: var(--radius-sm);
   padding: 8px 10px;
+}
+
+.summary-group--risk li {
+  border-left-color: var(--high);
+}
+
+.summary-group--protective li {
+  border-left-color: var(--low);
 }
 
 /* ── Explanation ────────────────────────────── */
@@ -717,7 +723,7 @@ select:focus {
   content: "";
   flex: 1;
   height: 1px;
-  background: var(--border);
+  background: var(--border-hi);
   align-self: center;
 }
 
@@ -832,7 +838,8 @@ select:focus {
 
 .waterfall-values {
   font-size: 10px;
-  color: var(--muted);
+  color: var(--text);
+  font-weight: 300;
   letter-spacing: 0.02em;
 }
 
