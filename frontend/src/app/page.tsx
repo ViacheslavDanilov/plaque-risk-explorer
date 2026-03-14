@@ -770,7 +770,7 @@ export default function Home() {
           </p>
 
           <div className="summary-columns">
-            <div className="summary-group">
+            <div className="summary-group summary-group--risk">
               <h3>Risk Drivers</h3>
               <ul>
                 {result.executive_summary.risk_drivers.map((item, index) => (
@@ -779,7 +779,7 @@ export default function Home() {
               </ul>
             </div>
 
-            <div className="summary-group">
+            <div className="summary-group summary-group--protective">
               <h3>Protective Signals</h3>
               <ul>
                 {result.executive_summary.protective_signals.map(
